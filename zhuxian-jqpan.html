@@ -425,7 +425,6 @@
       <span class="char-select-wrap">
         <select id="charSelect" onchange="switchChar(this.value)"></select>
         <button id="syncCharBtn" style="padding:4px 8px;font-size:12px;" title="从搬砖看板同步角色名">同步</button>
-        <button id="addCharBtn" style="padding:4px 8px;font-size:12px;">+角色</button>
       </span>
       <button id="resetDataBtn" style="padding:4px 10px;font-size:12px;">重置数据</button>
       <span class="small" id="syncInfo">加载中...</span>
@@ -532,7 +531,7 @@
         6. 灵蕴分火/冰/木/雷各 5 个，选属性自动过滤。<br/>
         7. <b>基础属性</b>（会心/专精/调息/元御）是独立第二属，跟元素属性不冲突。在「基础」列选，勾选后可参与优化。<br/>
         8. 1200 万步硬上限<br/>
-        9. <b>角色切换</b>：右上角下拉，每角色独立存库。自动读看板角色，没数据就点「+角色」手加。<br/>
+        9. <b>角色切换</b>：右上角下拉，每角色独立存库。自动读看板角色。<br/>
         10. <b>去重</b>：相同石头自动合并，不刷重复方案。
       </div>
     </details>
@@ -742,7 +741,7 @@ function renderCharSelect() {
       syncInfo.textContent = '已关联看板(' + tracker.length + '角色)';
       syncInfo.style.color = 'var(--green)';
     } else {
-      syncInfo.textContent = '未关联看板，点同步或手动+角色';
+      syncInfo.textContent = '未关联看板，点同步加载角色';
       syncInfo.style.color = 'var(--text-dim)';
     }
   }
@@ -1449,68 +1448,6 @@ document.getElementById("syncCharBtn").addEventListener("click", () => {
   }
 });
 
-function addCharHandler() {
-  // Replace button with input field
-  const btn = document.getElementById("addCharBtn");
-  if (!btn) return;
-  const wrap = btn.parentElement;
-  const input = document.createElement("input");
-  input.type = "text";
-  input.className = "char-add-input";
-  input.placeholder = "角色名";
-  input.maxLength = 20;
-  btn.replaceWith(input);
-  input.focus();
-  function commit() {
-    const name = input.value.trim();
-    if (name) {
-      // Check if name already exists
-      const chars = getCharList();
-      if (!chars.includes(name)) {
-        // Add to charList
-        if (!charList.includes(name)) charList.push(name);
-        // Save current and switch
-        if (currentChar) {
-          charData[currentChar] = {
-            stones: stones, spiritTargets: [...spiritTargets], attrTargets: [...attrTargets], active: active
-          };
-        }
-        currentChar = name;
-        stones = [];
-        spiritTargets = new Set();
-        attrTargets = new Set();
-        active = makeActive();
-        clearSolutions();
-        saveData();
-        renderCharSelect();
-        renderStoneTable();
-        renderSpiritGrid();
-        renderAttrTargetGrid();
-        renderBoard();
-        updateActiveCount();
-        updateLibSummary();
-      } else {
-        // Switch to existing character
-        switchChar(name);
-      }
-    }
-    // Restore button
-    const newBtn = document.createElement("button");
-    newBtn.id = "addCharBtn";
-    newBtn.textContent = "+角色";
-    newBtn.style.cssText = "padding:4px 8px;font-size:12px;";
-    newBtn.addEventListener("click", addCharHandler);
-    input.replaceWith(newBtn);
-  }
-  input.addEventListener("blur", commit);
-  input.addEventListener("keydown", ev => {
-    if (ev.key === "Enter") { ev.preventDefault(); input.blur(); }
-    if (ev.key === "Escape") { input.value = ""; input.blur(); }
-  });
-}
-
-document.getElementById("addCharBtn").addEventListener("click", addCharHandler);
-
 function addQualityStone(quality) {
   stones.push({ id: ++nextStoneId, quality: quality, shape: 'O', attr: 'fire', baseAttr: '', spirit: '', count: 1 });
   saveData();
@@ -1665,6 +1602,15 @@ document.getElementById("resetBoard").addEventListener("click", () => {
 /* =========================================================
    初始化
    ========================================================= */
+// Auto-sync characters from tracker on every page load
+(function autoSyncFromTracker() {
+  const tracker = getTrackerChars();
+  if (tracker && tracker.length > 0) {
+    charList = charList.filter(n => tracker.includes(n));
+    tracker.forEach(n => { if (!charList.includes(n)) charList.push(n); });
+    if (!charList.includes(currentChar)) currentChar = charList[0] || '';
+  }
+})();
 renderCharSelect();
 renderStoneTable();
 renderSpiritGrid();
