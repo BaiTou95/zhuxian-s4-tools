@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>诛仙世界 · 竞拍出价器</title>
 <style>
+@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css');
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
   --bg: #0D0D0D;
@@ -13,12 +14,12 @@
   --border-light: #1F1F1F;
   --text: #E0E0E0;
   --text-dim: #7A7A7A;
-  --gold: #f59e0b;
+  --gold: var(--gold-dim);
   --green: #4CAF50;
   --yellow: #F0A030;
   --red: #F44336;
-  --blue: #3b82f6;
-  --purple: #a855f7;
+  --blue: #6a9cc8;
+  --purple: #a080b8;
 }
 body {
   font-family: 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
@@ -74,7 +75,7 @@ select {
   padding-right: 32px; cursor: pointer;
 }
 select:hover, input:hover { border-color: var(--gold); }
-select:focus, input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 2px rgba(94,106,210,0.15); }
+select:focus, input:focus { outline: none; border-color: var(--gold);  }
 .price-input-wrap { position: relative; }
 .price-input-wrap input { padding-right: 40px; width: 100%; }
 .price-suffix {
