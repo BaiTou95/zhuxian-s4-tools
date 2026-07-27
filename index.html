@@ -139,8 +139,8 @@ tr:hover td{background:rgba(109,106,246,.04)}
 .silver-input:focus{outline:none;border-color:var(--primary)}
 .silver-delta.up{color:var(--green)}.silver-delta.down{color:var(--red)}.silver-delta.flat{color:var(--dim)}
 .silver-total-row{background:var(--card2);font-weight:700}
-.silver-summary{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:18px}
-.silver-stat{display:flex;flex-direction:column;gap:3px}
+.silver-summary{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px;align-items:baseline}
+.silver-stat{display:inline-flex;gap:6px;align-items:baseline}
 .silver-stat-label{font-size:12px;color:var(--muted)}
 .silver-stat-val{font-size:22px;font-weight:800}
 
@@ -285,13 +285,14 @@ tr:hover td{background:rgba(109,106,246,.04)}
   <div class="section-card silver">
     <h2>银两统计</h2>
     <div class="silver-summary" id="silverSummary"></div>
-    <table class="silver-table">
-      <thead>
-        <tr><th>角色</th><th>本周银两</th><th>上周银两</th><th>变化</th></tr>
+    <div style="font-size:12px;color:var(--muted);cursor:pointer;margin-bottom:8px" onclick="this.nextElementSibling.classList.toggle('collapsed')">角色明细 ▾</div>
+    <div class="collapse-body collapsed">
+      <table class="silver-table">
+        <tr><th>角色</th><th>本周银两</th><th>Δ</th></tr>
       </thead>
       <tbody id="silverTableBody"></tbody>
-      <tfoot id="silverTableFoot"></tfoot>
     </table>
+    </div>
   </div>
 
   <!-- Notes -->
@@ -904,51 +905,38 @@ function formatNum(n) {
 
 function renderSilverTable() {
   const body = document.getElementById('silverTableBody');
-  const foot = document.getElementById('silverTableFoot');
   const summary = document.getElementById('silverSummary');
   body.innerHTML = '';
-  foot.innerHTML = '';
 
   const hist = data.silverHistory || [];
   const lastWeek = hist.length > 0 ? hist[hist.length - 1] : null;
-
-  let thisTotal = 0;
-  let lastTotal = lastWeek ? lastWeek.total : 0;
+  let thisTotal = 0, lastTotal = lastWeek ? lastWeek.total : 0;
 
   data.characters.forEach((char, i) => {
     const silver = char.silver || 0;
     thisTotal += silver;
     const lastSilver = lastWeek ? (lastWeek.values[i] || 0) : 0;
     const delta = silver - lastSilver;
-    let dCls = 'flat', dText = '\u2014';
+    let dCls = 'flat', dText = '-';
     if (delta > 0) { dCls = 'up'; dText = '+' + formatNum(delta); }
     else if (delta < 0) { dCls = 'down'; dText = formatNum(delta); }
 
     const tr = document.createElement('tr');
     tr.innerHTML = '<td>' + char.name + '</td>' +
       '<td><input type="number" class="silver-input" value="' + silver + '" onchange="updateSilver(' + i + ', this.value)" placeholder="0"></td>' +
-      '<td style="color:var(--text-dim)">' + (lastSilver > 0 ? formatNum(lastSilver) : '\u2014') + '</td>' +
       '<td class="silver-delta ' + dCls + '">' + dText + '</td>';
     body.appendChild(tr);
   });
 
-  // Total row
   const totalDelta = thisTotal - lastTotal;
-  let tdCls = 'flat', tdText = '\u2014';
+  let tdCls = 'flat', tdText = '-';
   if (totalDelta > 0) { tdCls = 'up'; tdText = '+' + formatNum(totalDelta); }
   else if (totalDelta < 0) { tdCls = 'down'; tdText = formatNum(totalDelta); }
-  const ftr = document.createElement('tr');
-  ftr.className = 'silver-total-row';
-  ftr.innerHTML = '<td>合计</td><td>' + formatNum(thisTotal) + '</td><td>' + (lastTotal > 0 ? formatNum(lastTotal) : '\u2014') + '</td><td class="silver-delta ' + tdCls + '">' + tdText + '</td>';
-  foot.appendChild(ftr);
 
-  // Summary cards
-  const avgChar = data.characters.length > 0 ? Math.round(thisTotal / data.characters.length) : 0;
-  summary.innerHTML =
-    '<div class="silver-stat"><span class="silver-stat-label">本周总收入</span><span class="silver-stat-val" style="color:var(--gold)">' + formatNum(thisTotal) + '</span></div>' +
-    '<div class="silver-stat"><span class="silver-stat-label">上周总收入</span><span class="silver-stat-val" style="color:var(--text-dim)">' + (lastTotal > 0 ? formatNum(lastTotal) : '\u2014') + '</span></div>' +
-    '<div class="silver-stat"><span class="silver-stat-label">周环比变化</span><span class="silver-stat-val ' + tdCls + '" style="color:' + (totalDelta > 0 ? 'var(--green)' : totalDelta < 0 ? 'var(--red)' : 'var(--text-dim)') + '">' + tdText + '</span></div>' +
-    '<div class="silver-stat"><span class="silver-stat-label">角色均收</span><span class="silver-stat-val" style="color:var(--blue)">' + formatNum(avgChar) + '</span></div>';
+  // Compact summary
+  summary.innerHTML = '<span class="silver-stat"><span class="silver-stat-label">本周总收入</span><span class="silver-stat-val" style="color:var(--gold)">' + formatNum(thisTotal) + '</span></span>' +
+    '<span class="silver-stat"><span class="silver-stat-label">上周</span><span class="silver-stat-val" style="color:var(--text-dim)">' + (lastTotal > 0 ? formatNum(lastTotal) : '-') + '</span></span>' +
+    '<span class="silver-stat"><span class="silver-stat-label">变化</span><span class="silver-stat-val" style="color:' + (tdCls==='up'?'var(--green)':tdCls==='down'?'var(--red)':'var(--text-dim)') + '">' + tdText + '</span></span>';
 }
 
 function updateSilver(idx, val) {
@@ -1038,6 +1026,7 @@ function renderEventsGrid() {
   grid.innerHTML = '';
   const iconMap = { active: '', upcoming: '', ended: '', future: '', passed: '' };
   const evColorMap = { '风云事件':'fengyun','邪枭事件':'xiexiao','灵尊试道心':'lingzun','百花劫煞':'baihua','博观洞天':'boguan','世界BOSS':'boss','押镖':'yabiao','鸿钧之战':'hongjun','暮野封妖':'muye','帮会联赛':'banghui','璇玑宝库':'xuanji','帮派钓鱼':'diaoyu' };
+  const evNameColor = { '风云事件':'#3b82f6','邪枭事件':'#f43f5e','灵尊试道心':'#a855f7','百花劫煞':'#ec4899','博观洞天':'#f59e0b','世界BOSS':'#f97316','押镖':'#22c55e','鸿钧之战':'#dc2626','暮野封妖':'#6366f1','帮会联赛':'#06b6d4','璇玑宝库':'#eab308','帮派钓鱼':'#84cc16' };
 
   // Build + sort by status priority
   const items = FIXED_EVENTS.map(ev => ({ ev, s: getEventDisplayStatus(ev) }));
@@ -1049,7 +1038,8 @@ function renderEventsGrid() {
     if (s.state === 'active') cls += ' active';
     else if (s.state === 'passed') cls += ' passed';
     card.className = cls;
-    card.innerHTML = `<div class="ev-icon">${ev.icon}</div><div><div class="ev-name">${ev.name}</div><div class="ev-time">${ev.schedule}</div><div class="ev-desc">${ev.desc}</div><span class="ev-badge ${s.cls}">${s.label}</span></div>`;
+    const nc = evNameColor[ev.name] || 'var(--text)';
+    card.innerHTML = `<div class="ev-icon">${ev.icon}</div><div><div class="ev-name" style="color:${nc}">${ev.name}</div><div class="ev-time">${ev.schedule}</div><div class="ev-desc">${ev.desc}</div><span class="ev-badge ${s.cls}">${s.label}</span></div>`;
     grid.appendChild(card);
   });
 }
