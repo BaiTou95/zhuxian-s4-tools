@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>诛仙世界 · 天墟秘境选择器</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0D0D0D;
+  --card: #161616;
+  --card-hover: #1E1E1E;
+  --border: #2A2A2A;
+  --border-light: #1F1F1F;
+  --text: #E0E0E0;
+  --text-dim: #7A7A7A;
+  --gold: #14b8a6;
+  --green: #4CAF50;
+  --yellow: #F0A030;
+  --red: #F44336;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+  --mirror-xuantie: #b85c38;
+  --mirror-shouyu: #4a8ec2;
+  --mirror-lingbao: #4a9e5c;
+  --mirror-yufeng: #8b5fbf;
+}
+body {
+  font-family: 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 16px;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+.container { max-width: 1100px; margin: 0 auto; }
+
+/* Header */
+header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+}
+h1 { font-size: 22px; color: var(--gold); display: flex; align-items: center; gap: 8px; }
+.header-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.back-link {
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--text-dim); padding: 7px 14px; border-radius: 8px;
+  font-size: 13px; text-decoration: none; white-space: nowrap;
+  transition: all 0.15s;
+}
+.back-link:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Cards */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px; margin-bottom: 16px;
+}
+.card-title {
+  font-size: 14px; color: var(--gold); margin-bottom: 12px;
+  font-weight: 600; display: flex; align-items: center; gap: 8px;
+}
+.hint { font-size: 12px; color: var(--text-dim); margin-bottom: 10px; line-height: 1.5; }
+
+/* Filter row */
+.filter-row {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
+}
+.filter-group {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.filter-group label {
+  font-size: 11px; color: var(--text-dim); text-transform: uppercase;
+  letter-spacing: 1px; font-weight: 500;
+}
+select {
+  appearance: none; -webkit-appearance: none;
+  background: var(--border-light); color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 32px 8px 12px; font-size: 13px; cursor: pointer;
+  min-width: 110px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23d4af37' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  transition: border-color 0.15s;
+}
+select:hover { border-color: var(--gold); }
+select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 2px rgba(94,106,210,0.15); }
+
+/* Slot panel */
+.slot-panel-wrapper { position: relative; }
+.slot-toggle {
+  padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--border-light); color: var(--text); font-size: 13px;
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  transition: border-color 0.15s; user-select: none;
+}
+.slot-toggle:hover { border-color: var(--gold); }
+.slot-toggle::after { content: "▾"; font-size: 10px; color: var(--text-dim); }
+.slot-panel {
+  display: none; position: absolute; z-index: 50; top: calc(100% + 6px); left: 0;
+  min-width: 300px; max-width: 400px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.slot-panel.open { display: block; }
+.slot-panel .slot-all-row {
+  display: flex; align-items: center; gap: 8px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border); margin-bottom: 8px;
+}
+.slot-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+}
+.slot-check {
+  display: flex; align-items: center; gap: 5px; font-size: 12.5px;
+  color: var(--text-dim); cursor: pointer; padding: 3px 6px;
+  border-radius: 6px; transition: all 0.12s;
+}
+.slot-check:hover { background: var(--border-light); color: var(--text); }
+.slot-check input { accent-color: var(--gold); width: 14px; height: 14px; }
+.slot-check.checked { color: var(--gold); font-weight: 600; }
+.slot-check.checked input { accent-color: var(--gold); }
+
+/* Affix checkboxes */
+.affix-checks {
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+}
+.affix-check {
+  display: flex; align-items: center; gap: 5px; font-size: 13px;
+  color: var(--text-dim); cursor: pointer; padding: 5px 14px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--border-light); transition: all 0.12s;
+}
+.affix-check:hover { border-color: var(--gold); }
+.affix-check.checked { color: var(--gold); font-weight: 600; border-color: var(--gold); background: rgba(94,106,210,0.08); }
+.affix-check input { accent-color: var(--gold); width: 14px; height: 14px; }
+
+/* Combo buttons */
+.combo-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.combo-btn {
+  padding: 4px 12px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--border-light); color: var(--text-dim); font-size: 12px;
+  cursor: pointer; transition: all 0.12s;
+}
+.combo-btn:hover { border-color: var(--gold); color: var(--gold); }
+.combo-btn.active { background: rgba(94,106,210,0.1); border-color: var(--gold); color: var(--gold); font-weight: 600; }
+
+/* Reset */
+.btn-reset {
+  padding: 8px 16px; border: 1px solid rgba(244,67,54,0.3); border-radius: 8px;
+  background: transparent; color: var(--red); font-size: 13px; cursor: pointer;
+  transition: all 0.12s; align-self: flex-end;
+}
+.btn-reset:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+/* Result count */
+.result-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.result-count { color: var(--gold); font-size: 13px; }
+
+/* Table */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  text-align: left; padding: 8px 10px; color: var(--text-dim);
+  font-weight: 600; border-bottom: 1px solid var(--border);
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+  cursor: pointer; user-select: none; white-space: nowrap;
+}
+thead th:hover { color: var(--gold); }
+thead th .sort-arrow { font-size: 10px; margin-left: 3px; opacity: 0.4; }
+thead th.sorted .sort-arrow { opacity: 1; color: var(--gold); }
+tbody td {
+  padding: 9px 10px; border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+tbody tr:hover { background: rgba(94,106,210,0.03); }
+td.mirror { font-weight: 600; }
+.mirror-badge {
+  display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;
+}
+.mirror-badge.xuantie { background: rgba(184,92,56,0.15); color: #d4835e; }
+.mirror-badge.shouyu { background: rgba(74,142,194,0.15); color: #6db5e0; }
+.mirror-badge.lingbao { background: rgba(74,158,92,0.15); color: #5ec05e; }
+.mirror-badge.yufeng { background: rgba(139,95,191,0.15); color: #bc8cff; }
+.rate-high { color: var(--green); font-weight: 600; }
+.rate-med { color: var(--yellow); font-weight: 600; }
+.rate-low { color: #f97316; font-weight: 500; }
+.affix-tag {
+  display: inline-block; padding: 1px 6px; margin: 1px;
+  background: var(--border-light); border-radius: 4px;
+  font-size: 11px; color: var(--text-dim);
+}
+.affix-tag.hit { font-weight: 600; }
+.affix-tag.affix-hui { color: #ef4444; } .affix-tag.affix-hui.hit { background: rgba(239,68,68,0.12); }
+.affix-tag.affix-zhuan { color: #3b82f6; } .affix-tag.affix-zhuan.hit { background: rgba(59,130,246,0.12); }
+.affix-tag.affix-tiao { color: #22c55e; } .affix-tag.affix-tiao.hit { background: rgba(34,197,94,0.12); }
+.affix-tag.affix-yuan { color: #f59e0b; } .affix-tag.affix-yuan.hit { background: rgba(245,158,11,0.12); }
+.affix-check.affix-hui.checked { color: #ef4444; border-color: #ef4444; background: rgba(239,68,68,0.08); }
+.affix-check.affix-zhuan.checked { color: #3b82f6; border-color: #3b82f6; background: rgba(59,130,246,0.08); }
+.affix-check.affix-tiao.checked { color: #22c55e; border-color: #22c55e; background: rgba(34,197,94,0.08); }
+.affix-check.affix-yuan.checked { color: #f59e0b; border-color: #f59e0b; background: rgba(245,158,11,0.08); }
+.no-result {
+  text-align: center; color: var(--text-dim); padding: 32px 16px;
+  font-size: 14px; display: none;
+}
+
+/* Tooltip */
+.info-icon {
+  display: inline-flex; width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid var(--text-dim); color: var(--text-dim);
+  align-items: center; justify-content: center; font-size: 10px;
+  cursor: help; margin-left: 4px; vertical-align: middle;
+}
+.info-icon:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Footer */
+footer {
+  text-align: center; color: var(--text-dim); font-size: 12px;
+  padding: 20px 0;
+}
+
+@media (max-width: 640px) {
+  body { padding: 10px; }
+  h1 { font-size: 18px; }
+  .filter-row { gap: 8px; }
+  .slot-grid { grid-template-columns: repeat(3, 1fr); }
+  .slot-panel { min-width: 260px; max-width: calc(100vw - 40px); }
+  table { font-size: 12px; }
+  thead th, tbody td { padding: 6px 8px; }
+  .combo-row { gap: 4px; }
+  .combo-btn { padding: 3px 8px; font-size: 11px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>天墟秘境 · 选择器</h1>
+  <div class="header-right">
+    <a class="back-link" href="zhuxian-s4-tracker.html">返回搬砖看板</a>
+  </div>
+</header>
+
+<!-- Filters -->
+<div class="card">
+  <div class="card-title">筛选条件</div>
+  <div class="filter-row">
+    <div class="filter-group">
+      <label>宝鉴（镜）</label>
+      <select id="filterMirror">
+        <option value="">所有宝鉴</option>
+        <option value="玄铁">玄铁（衣服/护符）</option>
+        <option value="守御">守御（裤子/令牌/法印）</option>
+        <option value="灵宝">灵宝（头/手/腕/颈）</option>
+        <option value="御风">御风（腰/鞋/天灵/地宝）</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>副本</label>
+      <select id="filterDungeon">
+        <option value="">所有副本</option>
+        <option value="护塔破冥幻">护塔破冥幻</option>
+        <option value="斩恨踏蜚境">斩恨踏蜚境</option>
+        <option value="雪岭斩三执">雪岭斩三执</option>
+        <option value="幻月归心劫">幻月归心劫</option>
+        <option value="梵境西游录">梵境西游录</option>
+      </select>
+    </div>
+
+    <div class="filter-group slot-panel-wrapper">
+      <label>部位</label>
+      <div class="slot-toggle" id="slotToggle">全部部位</div>
+      <div class="slot-panel" id="slotPanel">
+        <div class="slot-all-row">
+          <label class="slot-check">
+            <input type="checkbox" id="slotAll" checked /> 全选
+          </label>
+        </div>
+        <div class="slot-grid" id="slotGrid"></div>
+      </div>
+    </div>
+
+    <div class="filter-group" style="flex:1;min-width:200px;">
+      <label>词条 <span class="info-icon" title="选择你想要的词条，最多2个。系统会筛选出掉落包含这些属性组合的副本。">?</span></label>
+      <div class="affix-checks" id="affixChecks">
+        <label class="affix-check affix-hui"><input type="checkbox" value="会" /> 会心</label>
+        <label class="affix-check affix-zhuan"><input type="checkbox" value="专" /> 专精</label>
+        <label class="affix-check affix-tiao"><input type="checkbox" value="调" /> 调息</label>
+        <label class="affix-check affix-yuan"><input type="checkbox" value="元" /> 元御</label>
+      </div>
+      <div class="combo-row" id="comboRow">
+        <button class="combo-btn" data-combo="会专">会专</button>
+        <button class="combo-btn" data-combo="会调">会调</button>
+        <button class="combo-btn" data-combo="会元">会元</button>
+        <button class="combo-btn" data-combo="专调">专调</button>
+        <button class="combo-btn" data-combo="专元">专元</button>
+        <button class="combo-btn" data-combo="调元">调元</button>
+      </div>
+      <label style="margin-top:8px;">排除词条 <span class="info-icon" title="选择不想出现的属性，结果中会过滤掉包含这些属性的副本。">?</span></label>
+      <div class="affix-checks" id="excludeChecks">
+        <label class="affix-check affix-hui"><input type="checkbox" value="会" /> 会心</label>
+        <label class="affix-check affix-zhuan"><input type="checkbox" value="专" /> 专精</label>
+        <label class="affix-check affix-tiao"><input type="checkbox" value="调" /> 调息</label>
+        <label class="affix-check affix-yuan"><input type="checkbox" value="元" /> 元御</label>
+      </div>
+    </div>
+
+    <button class="btn-reset" id="btnReset">重置</button>
+  </div>
+</div>
+
+<!-- Results -->
+<div class="card">
+  <div class="result-header">
+    <div class="card-title" style="margin:0;">查询结果</div>
+    <span class="result-count" id="resultCount">共 0 条</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th data-sort="mirror">宝鉴 <span class="sort-arrow">⇅</span></th>
+          <th data-sort="slot">部位 <span class="sort-arrow">⇅</span></th>
+          <th data-sort="dungeon">副本 <span class="sort-arrow">⇅</span></th>
+          <th data-sort="affixes">词条</th>
+          <th data-sort="rate">概率 <span class="sort-arrow">⇅</span></th>
+        </tr>
+      </thead>
+      <tbody id="resultBody"></tbody>
+    </table>
+  </div>
+  <div class="no-result" id="noResult">没有匹配的记录，换个条件试试。</div>
+</div>
+
+<footer>掉落数据来源：诛仙世界S4赛季天墟秘境 · 与搬砖看板联动</footer>
+
+</div>
+
+<script>
+/* =========================================================
+   数据定义
+   ========================================================= */
+const MIRRORS = ["玄铁", "守御", "灵宝", "御风"];
+
+const MIRROR_CLASS = {
+  "玄铁": "xuantie",
+  "守御": "shouyu",
+  "灵宝": "lingbao",
+  "御风": "yufeng"
+};
+
+const SLOT_GROUPS = {
+  "玄铁": ["衣服", "护符"],
+  "守御": ["裤子", "令牌", "法印"],
+  "灵宝": ["头", "手", "腕", "颈"],
+  "御风": ["腰", "鞋", "天灵", "地宝"]
+};
+
+const ALL_SLOTS = (function() {
+  const seen = {};
+  const result = [];
+  for (const key in SLOT_GROUPS) {
+    for (const slot of SLOT_GROUPS[key]) {
+      if (!seen[slot]) { seen[slot] = true; result.push(slot); }
+    }
+  }
+  return result;
+})();
+
+const AFFIX_ATTRS = {
+  "会专": ["会", "专"],
+  "会调": ["会", "调"],
+  "会元": ["会", "元"],
+  "专调": ["专", "调"],
+  "专元": ["专", "元"],
+  "调元": ["调", "元"]
+};
+
+const AFFIX_LABELS = { "会": "会心", "专": "专精", "调": "调息", "元": "元御" };
+
+/* DROP_DATA with full dungeon names */
+const DROP_DATA = [
+  // ===== 玄铁（衣服、护符）=====
+  { mirror: "玄铁", slot: "衣服", dungeon: "护塔破冥幻", affixes: ["会调"], dropRate: 33.3 },
+  { mirror: "玄铁", slot: "衣服", dungeon: "斩恨踏蜚境", affixes: ["会专", "调元"], dropRate: 25 },
+  { mirror: "玄铁", slot: "衣服", dungeon: "雪岭斩三执", affixes: ["会元"], dropRate: 25 },
+  { mirror: "玄铁", slot: "衣服", dungeon: "幻月归心劫", affixes: ["专元"], dropRate: 25 },
+  { mirror: "玄铁", slot: "衣服", dungeon: "梵境西游录", affixes: ["专调"], dropRate: 33.3 },
+  { mirror: "玄铁", slot: "护符", dungeon: "护塔破冥幻", affixes: ["专调", "调元"], dropRate: 33.3 },
+  { mirror: "玄铁", slot: "护符", dungeon: "斩恨踏蜚境", affixes: ["会专", "专元"], dropRate: 25 },
+  { mirror: "玄铁", slot: "护符", dungeon: "雪岭斩三执", affixes: ["会元", "调元", "会调"], dropRate: 25 },
+  { mirror: "玄铁", slot: "护符", dungeon: "幻月归心劫", affixes: ["会调", "会专", "专调"], dropRate: 25 },
+  { mirror: "玄铁", slot: "护符", dungeon: "梵境西游录", affixes: ["专元", "会元"], dropRate: 33.3 },
+
+  // ===== 守御（裤子、令牌、法印）=====
+  { mirror: "守御", slot: "裤子", dungeon: "护塔破冥幻", affixes: ["会元"], dropRate: 25 },
+  { mirror: "守御", slot: "裤子", dungeon: "斩恨踏蜚境", affixes: ["会调"], dropRate: 33.3 },
+  { mirror: "守御", slot: "裤子", dungeon: "雪岭斩三执", affixes: ["会专"], dropRate: 33.3 },
+  { mirror: "守御", slot: "裤子", dungeon: "幻月归心劫", affixes: ["调元"], dropRate: 25 },
+  { mirror: "守御", slot: "裤子", dungeon: "梵境西游录", affixes: ["专调", "专元"], dropRate: 25 },
+  { mirror: "守御", slot: "令牌", dungeon: "护塔破冥幻", affixes: ["会元", "会调"], dropRate: 25 },
+  { mirror: "守御", slot: "令牌", dungeon: "斩恨踏蜚境", affixes: ["会专"], dropRate: 33.3 },
+  { mirror: "守御", slot: "令牌", dungeon: "雪岭斩三执", affixes: ["专调"], dropRate: 33.3 },
+  { mirror: "守御", slot: "令牌", dungeon: "幻月归心劫", affixes: ["专元"], dropRate: 25 },
+  { mirror: "守御", slot: "令牌", dungeon: "梵境西游录", affixes: ["调元"], dropRate: 25 },
+  { mirror: "守御", slot: "法印", dungeon: "护塔破冥幻", affixes: ["会专"], dropRate: 25 },
+  { mirror: "守御", slot: "法印", dungeon: "斩恨踏蜚境", affixes: ["会调"], dropRate: 33.3 },
+  { mirror: "守御", slot: "法印", dungeon: "雪岭斩三执", affixes: ["会元"], dropRate: 33.3 },
+  { mirror: "守御", slot: "法印", dungeon: "幻月归心劫", affixes: ["专元", "调元"], dropRate: 25 },
+  { mirror: "守御", slot: "法印", dungeon: "梵境西游录", affixes: ["专调"], dropRate: 25 },
+
+  // ===== 灵宝（头、手、腕、颈）=====
+  { mirror: "灵宝", slot: "头", dungeon: "护塔破冥幻", affixes: ["专元"], dropRate: 25 },
+  { mirror: "灵宝", slot: "头", dungeon: "斩恨踏蜚境", affixes: ["调元"], dropRate: 20 },
+  { mirror: "灵宝", slot: "头", dungeon: "雪岭斩三执", affixes: ["会专", "专调"], dropRate: 16.7 },
+  { mirror: "灵宝", slot: "头", dungeon: "幻月归心劫", affixes: ["会调"], dropRate: 20 },
+  { mirror: "灵宝", slot: "头", dungeon: "梵境西游录", affixes: ["会元"], dropRate: 25 },
+  { mirror: "灵宝", slot: "手", dungeon: "护塔破冥幻", affixes: ["调元"], dropRate: 25 },
+  { mirror: "灵宝", slot: "手", dungeon: "斩恨踏蜚境", affixes: ["会元"], dropRate: 20 },
+  { mirror: "灵宝", slot: "手", dungeon: "雪岭斩三执", affixes: ["会调", "专元"], dropRate: 16.7 },
+  { mirror: "灵宝", slot: "手", dungeon: "幻月归心劫", affixes: ["会专"], dropRate: 20 },
+  { mirror: "灵宝", slot: "手", dungeon: "梵境西游录", affixes: ["专调"], dropRate: 25 },
+  { mirror: "灵宝", slot: "腕", dungeon: "护塔破冥幻", affixes: ["会专"], dropRate: 25 },
+  { mirror: "灵宝", slot: "腕", dungeon: "斩恨踏蜚境", affixes: ["会元", "专调"], dropRate: 20 },
+  { mirror: "灵宝", slot: "腕", dungeon: "雪岭斩三执", affixes: ["调元"], dropRate: 16.7 },
+  { mirror: "灵宝", slot: "腕", dungeon: "幻月归心劫", affixes: ["会调"], dropRate: 20 },
+  { mirror: "灵宝", slot: "腕", dungeon: "梵境西游录", affixes: ["专元"], dropRate: 25 },
+  { mirror: "灵宝", slot: "颈", dungeon: "护塔破冥幻", affixes: ["调元"], dropRate: 25 },
+  { mirror: "灵宝", slot: "颈", dungeon: "斩恨踏蜚境", affixes: ["专调"], dropRate: 20 },
+  { mirror: "灵宝", slot: "颈", dungeon: "雪岭斩三执", affixes: ["专元"], dropRate: 16.7 },
+  { mirror: "灵宝", slot: "颈", dungeon: "幻月归心劫", affixes: ["会调", "会元"], dropRate: 20 },
+  { mirror: "灵宝", slot: "颈", dungeon: "梵境西游录", affixes: ["会专"], dropRate: 25 },
+
+  // ===== 御风（腰、鞋、天灵、地宝）=====
+  { mirror: "御风", slot: "腰", dungeon: "护塔破冥幻", affixes: ["调元"], dropRate: 20 },
+  { mirror: "御风", slot: "腰", dungeon: "斩恨踏蜚境", affixes: ["专元"], dropRate: 20 },
+  { mirror: "御风", slot: "腰", dungeon: "雪岭斩三执", affixes: ["专调"], dropRate: 25 },
+  { mirror: "御风", slot: "腰", dungeon: "幻月归心劫", affixes: ["会元"], dropRate: 25 },
+  { mirror: "御风", slot: "腰", dungeon: "梵境西游录", affixes: ["会专", "会调"], dropRate: 16.7 },
+  { mirror: "御风", slot: "鞋", dungeon: "护塔破冥幻", affixes: ["专调", "会元"], dropRate: 20 },
+  { mirror: "御风", slot: "鞋", dungeon: "斩恨踏蜚境", affixes: ["会调"], dropRate: 20 },
+  { mirror: "御风", slot: "鞋", dungeon: "雪岭斩三执", affixes: ["专元"], dropRate: 25 },
+  { mirror: "御风", slot: "鞋", dungeon: "幻月归心劫", affixes: ["会专"], dropRate: 25 },
+  { mirror: "御风", slot: "鞋", dungeon: "梵境西游录", affixes: ["调元"], dropRate: 16.7 },
+  { mirror: "御风", slot: "天灵", dungeon: "护塔破冥幻", affixes: ["专调"], dropRate: 20 },
+  { mirror: "御风", slot: "天灵", dungeon: "斩恨踏蜚境", affixes: ["会元", "专元"], dropRate: 20 },
+  { mirror: "御风", slot: "天灵", dungeon: "雪岭斩三执", affixes: ["调元"], dropRate: 25 },
+  { mirror: "御风", slot: "天灵", dungeon: "幻月归心劫", affixes: ["会专"], dropRate: 25 },
+  { mirror: "御风", slot: "天灵", dungeon: "梵境西游录", affixes: ["会调"], dropRate: 16.7 },
+  { mirror: "御风", slot: "地宝", dungeon: "护塔破冥幻", affixes: ["专调"], dropRate: 20 },
+  { mirror: "御风", slot: "地宝", dungeon: "斩恨踏蜚境", affixes: ["专元"], dropRate: 20 },
+  { mirror: "御风", slot: "地宝", dungeon: "雪岭斩三执", affixes: ["会专"], dropRate: 25 },
+  { mirror: "御风", slot: "地宝", dungeon: "幻月归心劫", affixes: ["会调"], dropRate: 25 },
+  { mirror: "御风", slot: "地宝", dungeon: "梵境西游录", affixes: ["会元", "调元"], dropRate: 16.7 }
+];
+
+/* =========================================================
+   功能逻辑
+   ========================================================= */
+let selectedAffixes = [];
+let excludedAffixes = [];
+let sortKey = null;
+let sortDir = 1;
+
+const els = {
+  mirror: document.getElementById("filterMirror"),
+  dungeon: document.getElementById("filterDungeon"),
+  slotToggle: document.getElementById("slotToggle"),
+  slotPanel: document.getElementById("slotPanel"),
+  slotAll: document.getElementById("slotAll"),
+  resultBody: document.getElementById("resultBody"),
+  noResult: document.getElementById("noResult"),
+  resultCount: document.getElementById("resultCount")
+};
+
+// ---- Init slot checkboxes ----
+(function() {
+  const grid = document.getElementById("slotGrid");
+  ALL_SLOTS.forEach(slot => {
+    const lbl = document.createElement("label");
+    lbl.className = "slot-check checked";
+    lbl.innerHTML = `<input type="checkbox" value="${slot}" checked /> ${slot}`;
+    lbl.querySelector("input").addEventListener("change", () => {
+      lbl.classList.toggle("checked", lbl.querySelector("input").checked);
+      syncSlotAll();
+      updateSlotToggle();
+      filterAndRender();
+    });
+    grid.appendChild(lbl);
+  });
+})();
+
+// ---- Slot panel toggle ----
+els.slotToggle.addEventListener("click", e => {
+  e.stopPropagation();
+  els.slotPanel.classList.toggle("open");
+});
+document.addEventListener("click", e => {
+  if (!e.target.closest(".slot-panel-wrapper")) {
+    els.slotPanel.classList.remove("open");
+  }
+});
+
+// ---- Slot all ----
+els.slotAll.addEventListener("change", () => {
+  const checked = els.slotAll.checked;
+  document.querySelectorAll('#slotGrid input[type="checkbox"]').forEach(cb => {
+    cb.checked = checked;
+    cb.closest(".slot-check").classList.toggle("checked", checked);
+  });
+  updateSlotToggle();
+  filterAndRender();
+});
+
+function syncSlotAll() {
+  const cbs = document.querySelectorAll('#slotGrid input[type="checkbox"]');
+  let allChecked = true, noneChecked = true;
+  cbs.forEach(cb => {
+    if (cb.checked) noneChecked = false;
+    else allChecked = false;
+  });
+  els.slotAll.checked = allChecked;
+  els.slotAll.indeterminate = !allChecked && !noneChecked;
+}
+
+function updateSlotToggle() {
+  const checked = document.querySelectorAll('#slotGrid input[type="checkbox"]:checked');
+  els.slotToggle.textContent = checked.length === ALL_SLOTS.length ? "全部部位" : `选了 ${checked.length} 个`;
+}
+
+function getSelectedSlots() {
+  const result = [];
+  document.querySelectorAll('#slotGrid input[type="checkbox"]:checked').forEach(cb => result.push(cb.value));
+  return result;
+}
+
+// ---- Affix checkboxes ----
+const affixCbs = document.querySelectorAll('#affixChecks input[type="checkbox"]');
+affixCbs.forEach(cb => {
+  cb.addEventListener("change", () => {
+    const checked = document.querySelectorAll('#affixChecks input[type="checkbox"]:checked');
+    if (checked.length > 2) { cb.checked = false; return; }
+    selectedAffixes = Array.from(document.querySelectorAll('#affixChecks input[type="checkbox"]:checked')).map(c => c.value);
+    document.querySelectorAll('#affixChecks .affix-check').forEach(l => {
+      l.classList.toggle("checked", l.querySelector("input").checked);
+    });
+    syncComboButtons();
+    filterAndRender();
+  });
+});
+
+// ---- Combo buttons ----
+document.querySelectorAll(".combo-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const comboName = btn.getAttribute("data-combo");
+    const attrs = AFFIX_ATTRS[comboName];
+    if (!attrs) return;
+    const isActive = btn.classList.contains("active");
+    // Clear all
+    document.querySelectorAll('#affixChecks input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+      cb.closest(".affix-check").classList.remove("checked");
+    });
+    // Set if not previously active
+    if (!isActive) {
+      document.querySelectorAll('#affixChecks input[type="checkbox"]').forEach(cb => {
+        if (attrs.includes(cb.value)) {
+          cb.checked = true;
+          cb.closest(".affix-check").classList.add("checked");
+        }
+      });
+    }
+    selectedAffixes = isActive ? [] : attrs.slice();
+    syncComboButtons();
+    filterAndRender();
+  });
+});
+
+function syncComboButtons() {
+  document.querySelectorAll(".combo-btn").forEach(btn => {
+    const comboName = btn.getAttribute("data-combo");
+    const attrs = AFFIX_ATTRS[comboName];
+    if (!attrs) return;
+    const allChecked = attrs.every(a => selectedAffixes.includes(a));
+    btn.classList.toggle("active", allChecked);
+  });
+}
+
+// ---- Mirror + Dungeon change ----
+els.mirror.addEventListener("change", filterAndRender);
+els.dungeon.addEventListener("change", filterAndRender);
+
+// ---- Exclude affix checkboxes ----
+document.querySelectorAll('#excludeChecks input[type="checkbox"]').forEach(cb => {
+  cb.addEventListener("change", () => {
+    excludedAffixes = Array.from(document.querySelectorAll('#excludeChecks input[type="checkbox"]:checked')).map(c => c.value);
+    document.querySelectorAll('#excludeChecks .affix-check').forEach(l => {
+      l.classList.toggle("checked", l.querySelector("input").checked);
+    });
+    filterAndRender();
+  });
+});
+
+// ---- Reset ----
+document.getElementById("btnReset").addEventListener("click", () => {
+  els.mirror.value = "";
+  els.dungeon.value = "";
+  document.querySelectorAll('#slotGrid input[type="checkbox"]').forEach(cb => {
+    cb.checked = true;
+    cb.closest(".slot-check").classList.add("checked");
+  });
+  els.slotAll.checked = true;
+  els.slotAll.indeterminate = false;
+  updateSlotToggle();
+  document.querySelectorAll('#affixChecks input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+    cb.closest(".affix-check").classList.remove("checked");
+  });
+  document.querySelectorAll('#excludeChecks input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+    cb.closest(".affix-check").classList.remove("checked");
+  });
+  selectedAffixes = [];
+  excludedAffixes = [];
+  syncComboButtons();
+  sortKey = null;
+  sortDir = 1;
+  filterAndRender();
+});
+
+// ---- Sort ----
+document.querySelectorAll("thead th[data-sort]").forEach(th => {
+  th.addEventListener("click", () => {
+    const key = th.getAttribute("data-sort");
+    if (sortKey === key) { sortDir = -sortDir; }
+    else { sortKey = key; sortDir = 1; }
+    document.querySelectorAll("thead th").forEach(h => h.classList.remove("sorted"));
+    th.classList.add("sorted");
+    filterAndRender();
+  });
+});
+
+// ---- Filter & render ----
+function filterAndRender() {
+  const mirrorVal = els.mirror.value;
+  const dungeonVal = els.dungeon.value;
+  const selectedSlots = getSelectedSlots();
+
+  let results = DROP_DATA.filter(item => {
+    if (mirrorVal && item.mirror !== mirrorVal) return false;
+    if (dungeonVal && item.dungeon !== dungeonVal) return false;
+    if (selectedSlots.length > 0 && selectedSlots.indexOf(item.slot) === -1) return false;
+    // Include filter: must match selected affixes
+    if (selectedAffixes.length > 0) {
+      const matched = item.affixes.some(affix => {
+        const attrs = AFFIX_ATTRS[affix];
+        if (!attrs) return false;
+        return selectedAffixes.every(attr => attrs.indexOf(attr) !== -1);
+      });
+      if (!matched) return false;
+    }
+    // Exclude filter: drop items that contain any excluded affix
+    if (excludedAffixes.length > 0) {
+      const hasExcluded = item.affixes.some(affix => {
+        const attrs = AFFIX_ATTRS[affix];
+        if (!attrs) return false;
+        return attrs.some(attr => excludedAffixes.indexOf(attr) !== -1);
+      });
+      if (hasExcluded) return false;
+    }
+    return true;
+  });
+
+  // Sort
+  if (sortKey) {
+    results.sort((a, b) => {
+      let va = a[sortKey], vb = b[sortKey];
+      if (sortKey === "rate") { va = a.dropRate; vb = b.dropRate; }
+      if (va < vb) return -sortDir;
+      if (va > vb) return sortDir;
+      return 0;
+    });
+  }
+
+  render(results);
+  els.resultCount.textContent = `共 ${results.length} 条`;
+}
+
+function render(results) {
+  const tbody = els.resultBody;
+  tbody.innerHTML = "";
+
+  if (results.length === 0) {
+    els.noResult.style.display = "block";
+    return;
+  }
+  els.noResult.style.display = "none";
+
+  results.forEach(item => {
+    const tr = document.createElement("tr");
+    const mClass = MIRROR_CLASS[item.mirror] || "";
+
+    const affixHtml = item.affixes.map(a => {
+      const attrs = AFFIX_ATTRS[a];
+      const isHit = selectedAffixes.length > 0 && attrs && selectedAffixes.every(attr => attrs.indexOf(attr) !== -1);
+      const affixClass = a.includes('会') ? 'affix-hui' : a.includes('专') ? 'affix-zhuan' : a.includes('调') ? 'affix-tiao' : 'affix-yuan';
+      return `<span class="affix-tag ${affixClass}${isHit ? ' hit' : ''}">${a}</span>`;
+    }).join("");
+
+      let rateClass = "rate-high";
+      if (item.dropRate < 20) rateClass = "rate-low";
+      else if (item.dropRate < 27) rateClass = "rate-med";
+
+    tr.innerHTML = `
+      <td class="mirror"><span class="mirror-badge ${mClass}">${item.mirror}</span></td>
+      <td>${item.slot}</td>
+      <td>${item.dungeon}</td>
+      <td>${affixHtml}</td>
+      <td><span class="${rateClass}">${item.dropRate}%</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ---- Init ----
+filterAndRender();
+</script>
+</body>
+</html>

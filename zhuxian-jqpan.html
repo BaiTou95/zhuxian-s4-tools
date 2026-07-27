@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>天工机巧盘 · 求解器</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0D0D0D;
+    --card: #161616;
+    --card-hover: #1E1E1E;
+    --border: #2A2A2A;
+    --border-light: #1F1F1F;
+    --text: #E0E0E0;
+    --text-dim: #7A7A7A;
+    --gold: #c9a84c;
+    --green: #4CAF50;
+    --yellow: #F0A030;
+    --red: #F44336;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --cell-size: 42px;
+  }
+  body {
+    font-family: 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 16px;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  /* Header */
+  header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+  }
+  h1 { font-size: 24px; color: var(--gold); display: flex; align-items: center; gap: 8px; }
+  .header-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .back-link {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text-dim); padding: 7px 14px; border-radius: 8px;
+    font-size: 13px; text-decoration: none; white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .back-link:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* Cards */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 15px; color: var(--gold); margin-bottom: 12px;
+    font-weight: 600; display: flex; align-items: center; gap: 8px;
+  }
+  .card-title .right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .card-title .right .small { font-size: 11px; color: var(--text-dim); font-weight: 400; }
+
+  /* Main layout */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
+
+  /* Stone library table */
+  .stone-table { width: 100%; border-collapse: collapse; }
+  .stone-table th {
+    text-align: left; padding: 8px 6px; font-size: 12px;
+    color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .stone-table td {
+    padding: 6px 4px; border-bottom: 1px solid var(--border-light);
+    vertical-align: middle;
+  }
+  .stone-table select, .stone-table input[type="number"] {
+    background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    border-radius: 6px; padding: 5px 8px; font-size: 13px; font-family: inherit;
+    cursor: pointer;
+  }
+  .stone-table select:disabled, .stone-table input:disabled {
+    opacity: 0.35; cursor: not-allowed;
+  }
+  .stone-table select:focus, .stone-table input:focus {
+    outline: none; border-color: var(--gold);
+  }
+  .stone-table .col-quality { width: 55px; }
+  .stone-table .col-shape { min-width: 162px; width: 162px; }
+  .stone-table .col-attr { width: 60px; }
+  .stone-table .col-base { width: 72px; }
+  .stone-table .col-spirit { min-width: 110px; }
+  .stone-table .col-count { width: 55px; }
+  .stone-table .col-actions { width: 36px; text-align: center; }
+
+  /* Visual shape selector */
+  .shape-selector { display: flex; gap: 3px; align-items: center; }
+  .shape-opt {
+    width: 28px; height: 28px; box-sizing: border-box;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 5px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.12s; padding: 1px;
+  }
+  .shape-opt:hover { border-color: var(--gold); transform: scale(1.08); }
+  .shape-opt.selected {
+    border-color: var(--gold);
+    background: rgba(94,106,210,0.12);
+    box-shadow: 0 0 0 1px var(--gold) inset;
+  }
+  .shape-opt svg { display: block; pointer-events: none; }
+
+  /* CM stone fixed row */
+  .cm-row { background: rgba(94,106,210,0.06); }
+  .cm-row td { border-bottom: 1px solid rgba(94,106,210,0.15); }
+  .q-hdr td { padding:6px 12px; border-bottom:1px solid var(--border); cursor:pointer; user-select:none; }
+  .q-hdr td:hover { background:rgba(255,255,255,0.02); }
+  .q-hdr span { font-size:11px; font-weight:700; padding:2px 10px; border-radius:8px; letter-spacing:1px; }
+  .q-hdr .q-count { font-size:10px; color:var(--text-dim); margin-left:4px; }
+  .q-hdr .q-arrow { display:inline-block; margin-right:4px; font-size:10px; transition:transform .2s; }
+  .q-hdr.collapsed .q-arrow { transform:rotate(-90deg); }
+  .q-hdr-zhen span.q-label { color:#c9a84c; background:rgba(201,168,76,.1); }
+  .q-hdr-liang span.q-label { color:#a855f7; background:rgba(168,85,247,.1); }
+  .q-hdr-fan span.q-label { color:#71717a; background:rgba(113,113,122,.1); }
+  .q-add-btn { margin-left:8px; width:20px; height:20px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--text-dim); cursor:pointer; font-size:14px; line-height:1; padding:0; transition:all .15s; }
+  .q-add-btn:hover { border-color:var(--gold); color:var(--gold); background:rgba(201,168,76,.1); }
+  .q-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:8px; }
+  .q-badge-zhen { color:#c9a84c; background:rgba(201,168,76,.1); }
+  .q-badge-liang { color:#a855f7; background:rgba(168,85,247,.1); }
+  .q-badge-fan { color:#71717a; background:rgba(113,113,122,.1); }
+  .q-empty { color:var(--text-dim); font-size:12px; font-style:italic; padding:4px 16px; }
+  tr.q-group-row.collapsed { display:none; }
+  .cm-badge {
+    background: rgba(94,106,210,0.15); color: var(--gold);
+    padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;
+    display: inline-block;
+  }
+  .cm-fixed { color: var(--text-dim); font-size: 12px; }
+  .cm-count { color: var(--gold); font-weight: 700; font-size: 14px; }
+
+  /* Character selector */
+  .char-select-wrap { display: flex; gap: 6px; align-items: center; }
+  #charSelect { font-size: 12px; padding: 4px 8px; min-width: 100px; }
+  .char-add-input { font-size: 12px; padding: 4px 8px; width: 90px; }
+  .count-input { width: 46px !important; text-align: center; }
+  .del-btn {
+    background: transparent; color: var(--red);
+    border: 1px solid rgba(244,67,54,0.3);
+    border-radius: 6px; padding: 3px 8px; font-size: 14px;
+    cursor: pointer; transition: all 0.15s; font-family: inherit;
+  }
+  .del-btn:hover { background: rgba(244,67,54,0.1); border-color: var(--red); }
+
+  .add-row-btn {
+    margin-top: 10px; width: 100%;
+    background: transparent; border: 1px dashed var(--border);
+    color: var(--text-dim); border-radius: 8px;
+    padding: 8px; font-size: 13px; cursor: pointer;
+    transition: all 0.15s; font-family: inherit;
+  }
+  .add-row-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .lib-summary {
+    margin-top: 10px; font-size: 12px; color: var(--text-dim);
+    line-height: 1.7;
+  }
+  .lib-summary b { color: var(--text); }
+  .lib-summary .ok { color: var(--green); }
+  .lib-summary .warn { color: var(--yellow); }
+  .lib-summary .err { color: var(--red); }
+
+  /* Attribute dots */
+  .attr-dot {
+    display: inline-block; width: 10px; height: 10px;
+    border-radius: 50%; margin-right: 3px; vertical-align: middle;
+  }
+  .attr-fire { background: #e85c33; }
+  .attr-water { background: #4aa8e0; }
+  .attr-wood { background: #5ec05e; }
+  .attr-thunder { background: #d4af37; }
+  .attr-huixin { background: #ff6b9d; }
+  .attr-zhuanjing { background: #c084fc; }
+  .attr-tiaoxi { background: #60a5fa; }
+  .attr-yuanyu { background: #34d399; }
+
+  /* Attribute target checkboxes */
+  .attr-target-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+  .attr-target-check {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12.5px; color: var(--text-dim); cursor: pointer;
+    padding: 5px 12px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--border-light); transition: all 0.15s;
+  }
+  .attr-target-check:hover { border-color: var(--gold); }
+  .attr-target-check.checked { color: var(--gold); font-weight: 600; border-color: var(--gold); background: rgba(94,106,210,0.08); }
+  .attr-target-check input { accent-color: var(--gold); width: 14px; height: 14px; }
+
+  /* Board */
+  .board-section { display: flex; flex-direction: column; align-items: center; }
+  #board {
+    display: grid; gap: 0; touch-action: none;
+    margin: 8px 0;
+  }
+  .cell {
+    width: var(--cell-size); height: var(--cell-size);
+    position: relative; user-select: none; touch-action: none;
+    -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .cell.void { background: transparent; }
+  .cell.active {
+    background: var(--border-light); border: 1px solid var(--border);
+    cursor: pointer; border-radius: 3px;
+  }
+  .cell.locked {
+    background: #0d1117; border: 1px solid var(--border-light);
+    cursor: pointer; border-radius: 3px;
+  }
+  .cell.locked::after {
+    content: ""; position: absolute; top: 50%; left: 50%;
+    width: 10px; height: 2px; background: var(--border); border-radius: 2px;
+    transform: translate(-50%,-50%) rotate(45deg);
+  }
+  .cell.piece { border-radius: 3px; cursor: default; }
+  .cell.piece .spirit-label {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 9px; color: rgba(255,255,255,0.95);
+    text-shadow: 0 0 3px rgba(0,0,0,0.9), 0 0 1px rgba(0,0,0,0.9);
+    pointer-events: none; white-space: nowrap; font-weight: 600;
+    letter-spacing: 0;
+  }
+  .cell.piece .spirit-label.top { top: 32%; transform: translate(-50%, 0); }
+  .cell.piece .baseattr-label {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 8px; color: var(--gold);
+    text-shadow: 0 0 2px rgba(0,0,0,0.85);
+    pointer-events: none; white-space: nowrap; font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .cell.piece .baseattr-label.bottom { top: 66%; transform: translate(-50%, 0); }
+  .cell.piece .cm-label {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 8px; color: rgba(255,255,255,0.9);
+    text-shadow: 0 0 3px rgba(0,0,0,0.8);
+    pointer-events: none; white-space: nowrap; font-weight: 600;
+    background: rgba(0,0,0,0.35); border-radius: 3px;
+    padding: 1px 3px;
+  }
+
+  .board-controls {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    justify-content: center; margin-top: 12px;
+  }
+  .mode-toggle {
+    display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  }
+  .mode-toggle button {
+    border-radius: 0; border: 0; padding: 7px 14px;
+  }
+  .mode-toggle button.on {
+    background: var(--gold); color: #0d1117; font-weight: 600;
+  }
+
+  /* Buttons */
+  button, .btn {
+    background: var(--border-light); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 7px 14px; font-size: 13px; cursor: pointer;
+    transition: all 0.15s; font-family: inherit;
+  }
+  button:hover, .btn:hover { border-color: var(--gold); color: var(--gold); }
+  button.primary {
+    background: var(--gold); color: #0d1117; font-weight: 700;
+    border: 0; padding: 10px 20px; font-size: 14px;
+  }
+  button.primary:hover { filter: brightness(1.1); color: #0d1117; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  input[type="number"], input[type="text"], select {
+    background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    border-radius: 6px; padding: 6px 10px; font-size: 13px; font-family: inherit;
+  }
+  input[type="number"] { width: 60px; }
+  input:focus, select:focus { outline: none; border-color: var(--gold); }
+
+  /* Hint / status */
+  .hint { color: var(--text-dim); font-size: 12.5px; line-height: 1.7; margin-bottom: 10px; }
+  .small { font-size: 12px; color: var(--text-dim); }
+
+  #status {
+    margin-top: 12px; font-size: 13px; line-height: 1.7;
+    padding: 10px 12px; border-radius: 8px;
+    background: var(--border-light); border: 1px solid var(--border);
+    color: var(--text-dim); min-height: 20px;
+  }
+  #status .ok { color: var(--green); }
+  #status .err { color: var(--red); }
+
+  /* Nav */
+  .nav-bar {
+    display: flex; align-items: center; gap: 12px;
+    justify-content: center; margin-top: 12px;
+  }
+  .nav-bar .counter {
+    color: var(--gold); font-size: 15px; min-width: 100px;
+    text-align: center; font-weight: 600;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 6px 12px;
+    margin-top: 10px; font-size: 12px; color: var(--text-dim);
+    justify-content: center;
+  }
+  .legend .legend-item {
+    display: flex; align-items: center; gap: 3px;
+    padding: 2px 8px; background: var(--border-light); border-radius: 4px;
+  }
+  .legend .legend-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .legend .sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .legend .spirit-tag { color: var(--gold); font-size: 11px; }
+
+  /* Spirit grid */
+  .spirit-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  @media (max-width: 360px) { .spirit-grid { grid-template-columns: 1fr; } }
+  .spirit-group {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; background: var(--border-light);
+  }
+  .spirit-group-title {
+    font-size: 13px; font-weight: 600; color: var(--text);
+    margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+  }
+  .spirit-checks { display: flex; flex-direction: column; gap: 3px; }
+  .spirit-check {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; color: var(--text-dim); cursor: pointer;
+  }
+  .spirit-check input { accent-color: var(--gold); width: 14px; height: 14px; }
+  .spirit-check.checked { color: var(--gold); font-weight: 600; }
+
+  /* Spirit summary */
+  .spirit-summary {
+    background: var(--border-light); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px; margin-top: 12px;
+    font-size: 12.5px; line-height: 1.7;
+  }
+  .spirit-summary .ss-title { color: var(--gold); font-weight: 600; margin-bottom: 6px; }
+  .spirit-summary .ss-row { display: flex; flex-wrap: wrap; gap: 6px 12px; }
+  .spirit-summary .ss-item { display: flex; align-items: center; gap: 4px; }
+  .spirit-summary .ss-item .num { font-weight: 700; }
+  .spirit-summary .ss-item.hit .num, .spirit-summary .ss-item.hit { color: var(--green); }
+  .spirit-summary .ss-empty { color: var(--red); }
+
+  /* Controls row */
+  .controls-row {
+    display: flex; gap: 10px; align-items: center;
+    flex-wrap: wrap; margin: 10px 0;
+  }
+  .controls-row label { font-size: 12.5px; color: var(--text-dim); }
+
+  /* Help */
+  details.help { margin-top: 8px; }
+  details.help summary { cursor: pointer; color: var(--text-dim); font-size: 13px; }
+  details.help summary:hover { color: var(--gold); }
+  details.help div {
+    color: var(--text-dim); font-size: 12.5px; line-height: 1.8;
+    margin-top: 8px; padding: 10px; background: var(--border-light);
+    border-radius: 8px;
+  }
+
+  hr.split { border: 0; height: 1px; background: var(--border); margin: 14px 0; }
+
+  @media (max-width: 560px) {
+    :root { --cell-size: 36px; }
+    .main-grid { gap: 12px; }
+    .card { padding: 12px; }
+    h1 { font-size: 20px; }
+    .stone-table { font-size: 11px; }
+    .stone-table select, .stone-table input { font-size: 11px; padding: 4px 6px; }
+    .stone-table th { font-size: 10px; padding: 6px 3px; }
+    .stone-table td { padding: 4px 2px; }
+    .shape-opt { width: 24px; height: 24px; }
+    .shape-opt svg { width: 20px; height: 20px; }
+    .shape-selector { gap: 2px; }
+    .stone-table .col-shape { min-width: 132px; width: 132px; }
+    .stone-table .col-base { width: 64px; }
+    .stone-table .col-spirit { min-width: 90px; }
+    .cell.piece .spirit-label { font-size: 7px; }
+    .cell.piece .baseattr-label { font-size: 6.5px; }
+    .cell.piece .cm-label { font-size: 6.5px; padding: 0px 2px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>天工机巧盘</h1>
+  <div class="header-right">
+    <a href="zhuxian-s4-tracker.html" class="back-link">返回搬砖看板</a>
+  </div>
+</header>
+
+<!-- Stone Library -->
+<div class="card">
+  <div class="card-title">
+    机巧石库
+    <span class="right">
+      <span class="char-select-wrap">
+        <select id="charSelect" onchange="switchChar(this.value)"></select>
+        <button id="syncCharBtn" style="padding:4px 8px;font-size:12px;" title="从搬砖看板同步角色名">同步</button>
+        <button id="addCharBtn" style="padding:4px 8px;font-size:12px;">+角色</button>
+      </span>
+      <button id="resetDataBtn" style="padding:4px 10px;font-size:12px;">重置数据</button>
+      <span class="small" id="syncInfo">加载中...</span>
+    </span>
+  </div>
+  <table class="stone-table">
+    <thead>
+      <tr>
+        <th class="col-quality">品质</th>
+        <th class="col-shape">形状</th>
+        <th class="col-attr">属性</th>
+        <th class="col-base">基础</th>
+        <th class="col-spirit">灵蕴</th>
+        <th class="col-count">数量</th>
+        <th class="col-actions">删</th>
+      </tr>
+    </thead>
+    <tbody id="stoneTbody"></tbody>
+  </table>
+  <div class="lib-summary" id="libSummary"></div>
+</div>
+
+<!-- Board + Solve Panel -->
+<div class="main-grid">
+  <!-- Board -->
+  <div class="card">
+    <div class="card-title">机巧盘（点/拖拽切换）</div>
+    <div class="board-section">
+      <div id="board"></div>
+      <div class="board-controls">
+        <div class="mode-toggle" id="modeToggle">
+          <button data-mode="edit" class="on">编辑格子</button>
+          <button data-mode="view">查看解</button>
+        </div>
+        <button id="allOn">全部解锁</button>
+        <button id="allOff">全部锁定</button>
+        <button id="resetBoard">重置</button>
+      </div>
+    </div>
+
+    <div class="spirit-summary" id="spiritSummary" style="display:none">
+      <div class="ss-title">激活灵蕴</div>
+      <div class="ss-row" id="ssRow"></div>
+    </div>
+  </div>
+
+  <!-- Solve Panel -->
+  <div class="card">
+    <div class="card-title">
+      目标灵蕴（可选）
+      <span class="right">
+        <button id="clearTargetsBtn" style="padding:4px 10px;font-size:12px;">清空</button>
+      </span>
+    </div>
+    <div class="hint">
+      勾选想激活的灵蕴，求解器优先凑齐。不勾选 = 纯填格模式（等同白嫖求解）。
+    </div>
+    <div class="spirit-grid" id="spiritGrid"></div>
+
+    <hr class="split"/>
+
+    <div class="card-title">
+      目标属性（可选）
+      <span class="right">
+        <button id="clearAttrTargetsBtn" style="padding:4px 10px;font-size:12px;">清空</button>
+      </span>
+    </div>
+    <div class="hint">
+      勾选想激活的基础属性（会心/专精/调息/元御），求解器优先凑齐带该属性的石头。不勾选 = 不按基础属性优化。
+    </div>
+    <div class="attr-target-grid" id="attrTargetGrid"></div>
+
+    <hr class="split"/>
+
+    <div class="card-title">求解</div>
+    <div class="controls-row">
+      <label>最多解数 <input type="number" id="maxSolutions" value="30" min="1" max="500" /></label>
+      <label>排序
+        <select id="sortMode">
+          <option value="score">按得分</option>
+          <option value="spirit">按灵蕴类型</option>
+        </select>
+      </label>
+    </div>
+    <div class="controls-row">
+      <button class="primary" id="solveBtn" style="flex:1;">计算</button>
+    </div>
+    <div id="status">登记石头，点亮格子，开算。</div>
+
+    <div class="nav-bar" id="navBar" style="display:none">
+      <button id="prevBtn">◀ 上一个</button>
+      <span class="counter" id="counter">1 / 1</span>
+      <button id="nextBtn">下一个 ▶</button>
+    </div>
+
+    <details class="help">
+      <summary>小抄</summary>
+      <div>
+        1. 盘面 40 格（顶 4 + 下 6×6），默认解锁 28 格。点击/拖拽编辑区域。<br/>
+        2. <b>白嫖</b>只有属性，仅参与填格；<b>良/珍品</b>带灵蕴，是优化主体。<br/>
+        3. <b>匠心石</b>固定正方形，自动放 1 个，不用管。<br/>
+        4. 石头能旋转 4 个方向，不会翻面。<br/>
+        5. 不勾选目标灵蕴 = 纯填格模式（白嫖求解）。<br/>
+        6. 灵蕴分火/冰/木/雷各 5 个，选属性自动过滤。<br/>
+        7. <b>基础属性</b>（会心/专精/调息/元御）是独立第二属，跟元素属性不冲突。在「基础」列选，勾选后可参与优化。<br/>
+        8. 1200 万步硬上限<br/>
+        9. <b>角色切换</b>：右上角下拉，每角色独立存库。自动读看板角色，没数据就点「+角色」手加。<br/>
+        10. <b>去重</b>：相同石头自动合并，不刷重复方案。
+      </div>
+    </details>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+/* =========================================================
+   灵蕴名单（4属性 x 5 = 20个）
+   ========================================================= */
+const SPIRIT_LIST = {
+  fire:    { name: '火', icon: 'attr-fire',    spirits: ['天火陨星','烈火燎原','神火迸发','赤焰天环','烈焰焚身'] },
+  water:   { name: '冰', icon: 'attr-water',   spirits: ['凛霜寒涌','寒潮冰涌','霜寒破裂','寒晶刺','霜刺寒雨'] },
+  wood:    { name: '木', icon: 'attr-wood',    spirits: ['腐木瘴风','神木骰','裂地崩','苍林浮生','木引青灵'] },
+  thunder: { name: '雷', icon: 'attr-thunder', spirits: ['惊雷戟','五雷珠','九霄雷动','雷霆震击','天雷护佑'] }
+};
+const ALL_SPIRITS = [].concat(...Object.values(SPIRIT_LIST).map(g => g.spirits));
+const ATTR_KEYS = ['fire', 'water', 'wood', 'thunder'];
+// 基础属性（独立第二属性，与元素属性叠加，无灵蕴）
+const BASE_ATTR_KEYS = ['huixin', 'zhuanjing', 'tiaoxi', 'yuanyu'];
+const BASE_ATTR_INFO = {
+  huixin:    { name: '会心', icon: 'attr-huixin' },
+  zhuanjing: { name: '专精', icon: 'attr-zhuanjing' },
+  tiaoxi:    { name: '调息', icon: 'attr-tiaoxi' },
+  yuanyu:    { name: '元御', icon: 'attr-yuanyu' },
+};
+
+/* =========================================================
+   固定盘面：7 行 x 6 列
+   ========================================================= */
+const ROWS = 7, COLS = 6;
+const exists = [];
+for (let r = 0; r < ROWS; r++) {
+  const line = [];
+  for (let c = 0; c < COLS; c++) line.push(r === 0 ? (c >= 1 && c <= 4) : true);
+  exists.push(line);
+}
+
+function makeActive() {
+  const a = [];
+  for (let r = 0; r < ROWS; r++) {
+    const line = [];
+    for (let c = 0; c < COLS; c++) {
+      const unlocked = (r >= 1 && r <= 4) || (r === 5 && c <= 3);
+      line.push(exists[r][c] && unlocked);
+    }
+    a.push(line);
+  }
+  return a;
+}
+
+let active = makeActive();
+
+/* =========================================================
+   形状定义（5种机巧石 + 匠心石）
+   ========================================================= */
+const CM_COLOR = "#00d4aa";
+const SHAPE_COLORS = {
+  O: "#58a6ff",
+  L: "#3fb950",
+  T: "#f85149",
+  I: "#bc8cff",
+  J: "#d29922",
+};
+
+const SHAPES = {
+  O: { name: "正方形", color: SHAPE_COLORS.O, cells: [[0,0],[0,1],[1,0],[1,1]] },
+  L: { name: "L型",   color: SHAPE_COLORS.L, cells: [[0,0],[1,0],[1,1],[1,2]] },
+  T: { name: "T型",   color: SHAPE_COLORS.T, cells: [[0,0],[0,1],[0,2],[1,1]] },
+  I: { name: "一字型", color: SHAPE_COLORS.I, cells: [[0,0],[0,1],[0,2],[0,3]] },
+  J: { name: "J型",   color: SHAPE_COLORS.J, cells: [[0,2],[1,0],[1,1],[1,2]] },
+};
+
+const cmStone = {
+  name: "匠心石", color: CM_COLOR, isCM: true,
+  cells: [[0,0],[0,1],[1,0],[1,1]], count: 1
+};
+
+const SHAPE_KEYS = ['O', 'L', 'T', 'I', 'J'];
+// Reverse mapping: shape name -> key (for legend SVG icons)
+const SHAPE_NAME_TO_KEY = {};
+Object.entries(SHAPES).forEach(([k, v]) => { SHAPE_NAME_TO_KEY[v.name] = k; });
+
+/* =========================================================
+   机巧石库数据（按角色独立保存）
+   每块石头 = 形状 + 基础属性 + 灵蕴(良/珍)
+   ========================================================= */
+let stones = [
+  { id: 1, quality: '良', shape: 'L', attr: 'thunder', spirit: '天雷护佑', count: 3 },
+  { id: 2, quality: '良', shape: 'T', attr: 'thunder', spirit: '五雷珠',   count: 2 },
+  { id: 3, quality: '凡', shape: 'I', attr: 'wood',    spirit: '',         count: 5 },
+];
+let spiritTargets = new Set();
+let attrTargets = new Set();
+let nextStoneId = 100;
+
+const STORAGE_KEY = 'zhuxian_jqpan_v3';
+const TRACKER_KEY = 'zhuxian_s4_tracker_v1';
+const V2_KEY = 'zhuxian_jqpan_v2';
+
+// Per-character data: { '角色名': { stones, spiritTargets, active } }
+let charData = {};
+let currentChar = '';
+let charList = []; // Self-contained character name list (stored in v3)
+
+function saveData() {
+  if (currentChar) {
+    charData[currentChar] = {
+      stones: [...stones],
+      spiritTargets: [...spiritTargets],
+      attrTargets: [...attrTargets],
+      active: active.map(r => [...r])
+    };
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    version: 3,
+    currentChar: currentChar,
+    charList: [...charList],
+    charData: charData
+  }));
+}
+
+function guessAttrFromSpirit(spirit) {
+  if (!spirit) return '';
+  for (const [key, group] of Object.entries(SPIRIT_LIST)) {
+    if (group.spirits.includes(spirit)) return key;
+  }
+  return '';
+}
+
+/* =========================================================
+   读取搬砖看板的角色列表（尝试跨文件读取 localStorage）
+   ========================================================= */
+function getTrackerChars() {
+  try {
+    const raw = localStorage.getItem(TRACKER_KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (Array.isArray(d.characters) && d.characters.length > 0) {
+        return d.characters.map(c => c.name || '角色');
+      }
+    }
+  } catch(e) {}
+  return null;
+}
+
+/* 获取可用角色名列表（优先自身 charList，回退看板，再回退默认） */
+function getCharList() {
+  if (charList.length > 0) return charList;
+  // First time: try tracker
+  const tracker = getTrackerChars();
+  if (tracker && tracker.length > 0) return tracker;
+  // Fallback: use charData keys, or default
+  const keys = Object.keys(charData);
+  if (keys.length > 0) return keys;
+  return ['角色1'];
+}
+
+/* 从看板同步角色名（合并新角色，不删除已有的） */
+function syncFromTracker() {
+  const tracker = getTrackerChars();
+  if (!tracker || tracker.length === 0) {
+    // Show diagnostic info
+    let hasKey = false;
+    try { hasKey = !!localStorage.getItem(TRACKER_KEY); } catch(e) {}
+    return { ok: false, reason: hasKey ? '看板数据格式异常' : '未找到看板数据（可能未在同一页面打开）' };
+  }
+  let added = 0;
+  tracker.forEach(name => {
+    if (!charList.includes(name)) {
+      charList.push(name);
+      added++;
+    }
+  });
+  // Clean up: remove default '角色1' if it has no data and isn't in tracker
+  charList = charList.filter(name => {
+    if (name === '角色1' && !tracker.includes('角色1') && !charData['角色1']) return false;
+    return true;
+  });
+  // If charList was empty or only had defaults, replace with tracker list
+  if (charList.length === 0 || (charList.length === 1 && charList[0] === '角色1' && !charData['角色1'])) {
+    charList = tracker.slice();
+  }
+  // Ensure currentChar is still in the list
+  if (currentChar && !charList.includes(currentChar)) {
+    charList.unshift(currentChar);
+  }
+  saveData();
+  return { ok: true, added: added, total: tracker.length };
+}
+
+/* 渲染角色下拉选择器 */
+function renderCharSelect() {
+  const sel = document.getElementById('charSelect');
+  if (!sel) return;
+  const chars = getCharList();
+  sel.innerHTML = chars.map(name =>
+    `<option value="${name}" ${name === currentChar ? 'selected' : ''}>${name}</option>`
+  ).join('');
+  // Show sync status
+  const syncInfo = document.getElementById('syncInfo');
+  if (syncInfo) {
+    const tracker = getTrackerChars();
+    if (tracker && tracker.length > 0) {
+      syncInfo.textContent = '已关联看板(' + tracker.length + '角色)';
+      syncInfo.style.color = 'var(--green)';
+    } else {
+      syncInfo.textContent = '未关联看板，点同步或手动+角色';
+      syncInfo.style.color = 'var(--text-dim)';
+    }
+  }
+}
+
+/* 切换角色：保存当前 → 加载目标 */
+function switchChar(name) {
+  if (!name) return;
+  if (name === currentChar) return;
+  if (!charList.includes(name)) charList.push(name);
+
+  // Save current
+  if (currentChar) {
+    charData[currentChar] = {
+      stones: [...stones],
+      spiritTargets: [...spiritTargets],
+      attrTargets: [...attrTargets],
+      active: active.map(r => [...r])
+    };
+  }
+
+  // Load target
+  currentChar = name;
+  const cd = charData[name] || {};
+  stones = Array.isArray(cd.stones) ? cd.stones.map(s => ({...s})) : [];
+  spiritTargets = new Set(cd.spiritTargets || []);
+  attrTargets = new Set(cd.attrTargets || []);
+  active = (cd.active && Array.isArray(cd.active)) ? cd.active.map(r => [...r]) : makeActive();
+  validateActive();
+  clearSolutions();
+
+  saveData();
+  renderStoneTable();
+  renderSpiritGrid();
+  renderAttrTargetGrid();
+  renderBoard();
+  document.getElementById("spiritSummary").style.display = "none";
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d.version === 3 && d.charData) {
+        charData = d.charData;
+        charList = Array.isArray(d.charList) ? d.charList : [];
+        currentChar = d.currentChar || '';
+        // If charList empty, try to populate from tracker
+        if (charList.length === 0) {
+          const tracker = getTrackerChars();
+          if (tracker) charList = tracker.slice();
+        }
+        const chars = getCharList();
+        if (!currentChar || !chars.includes(currentChar)) {
+          currentChar = chars[0];
+        }
+        const cd = charData[currentChar] || {};
+        stones = Array.isArray(cd.stones) ? cd.stones : [];
+        spiritTargets = new Set(Array.isArray(cd.spiritTargets) ? cd.spiritTargets : []);
+        attrTargets = new Set(Array.isArray(cd.attrTargets) ? cd.attrTargets : []);
+        active = Array.isArray(cd.active) ? cd.active : makeActive();
+        validateActive();
+        return;
+      }
+    }
+    // Migrate from v2
+    const v2raw = localStorage.getItem(V2_KEY);
+    if (v2raw) {
+      const v2 = JSON.parse(v2raw);
+      // Populate charList from tracker
+      const tracker = getTrackerChars();
+      charList = tracker ? tracker.slice() : ['角色1'];
+      currentChar = charList[0];
+      stones = Array.isArray(v2.stones) ? v2.stones : [];
+      spiritTargets = new Set(Array.isArray(v2.spiritTargets) ? v2.spiritTargets : []);
+      attrTargets = new Set(Array.isArray(v2.attrTargets) ? v2.attrTargets : []);
+      active = Array.isArray(v2.active) ? v2.active : makeActive();
+      validateActive();
+      charData[currentChar] = {
+        stones: stones, spiritTargets: [...spiritTargets], attrTargets: [...attrTargets], active: active
+      };
+      saveData();
+      return;
+    }
+    // Migrate from v1
+    const v1 = localStorage.getItem('zhuxian_jqpan_v1');
+    if (v1) {
+      const d = JSON.parse(v1);
+      const tracker = getTrackerChars();
+      charList = tracker ? tracker.slice() : ['角色1'];
+      currentChar = charList[0];
+      if (Array.isArray(d.spiritStones)) {
+        stones = d.spiritStones.map(s => ({
+          id: s.id || ++nextStoneId,
+          quality: s.quality || '凡',
+          shape: s.shape || 'O',
+          attr: s.attr || guessAttrFromSpirit(s.spirit) || 'fire',
+          baseAttr: s.baseAttr || (BASE_ATTR_KEYS.includes(s.attr) ? s.attr : '') || '',
+          spirit: s.spirit || '',
+          count: s.count || 0
+        }));
+      }
+      if (Array.isArray(d.spiritTargets)) spiritTargets = new Set(d.spiritTargets);
+      attrTargets = new Set(Array.isArray(d.attrTargets) ? d.attrTargets : []);
+      if (Array.isArray(d.active2)) active = d.active2;
+      validateActive();
+      charData[currentChar] = {
+        stones: stones, spiritTargets: [...spiritTargets], attrTargets: [...attrTargets], active: active
+      };
+      saveData();
+      return;
+    }
+    // First time: try tracker, else default
+    const tracker = getTrackerChars();
+    charList = tracker ? tracker.slice() : ['角色1'];
+    currentChar = charList[0];
+  } catch(e) {
+    console.warn('zhuxian-jqpan loadData failed, resetting:', e);
+    try { localStorage.removeItem(STORAGE_KEY); } catch(_) {}
+    try { localStorage.removeItem(V2_KEY); } catch(_) {}
+    try { localStorage.removeItem('zhuxian_jqpan_v1'); } catch(_) {}
+    if (charList.length === 0) charList = ['角色1'];
+    currentChar = currentChar || charList[0];
+  }
+}
+loadData();
+
+// Validate active array dimensions (fix potential v1 migration crash)
+function validateActive() {
+  if (!Array.isArray(active) || active.length !== ROWS ||
+      !active.every(row => Array.isArray(row) && row.length === COLS)) {
+    active = makeActive();
+    saveData(); // Persist immediately so corrupted state doesn't persist across reloads
+  }
+}
+validateActive();
+
+/* =========================================================
+   形状工具：归一化、旋转
+   ========================================================= */
+function normalize(cells) {
+  const minR = Math.min(...cells.map(c => c[0]));
+  const minC = Math.min(...cells.map(c => c[1]));
+  return cells.map(([r,c]) => [r - minR, c - minC]).sort((a,b) => a[0]-b[0] || a[1]-b[1]);
+}
+function keyOf(cells) { return cells.map(c => c[0]+","+c[1]).join(";"); }
+function rotate90(cells) { return cells.map(([r,c]) => [c, -r]); }
+function orientations(cells) {
+  const res = [], seen = new Set();
+  let cur = normalize(cells);
+  for (let i = 0; i < 4; i++) {
+    const n = normalize(cur), k = keyOf(n);
+    if (!seen.has(k)) { seen.add(k); res.push(n); }
+    cur = normalize(rotate90(cur));
+  }
+  return res;
+}
+
+/* =========================================================
+   生成形状 SVG 图标（用于可视化选择器）
+   ========================================================= */
+function getShapeIcon(shapeKey, customColor) {
+  const sh = SHAPES[shapeKey];
+  if (!sh) return '';
+  const color = customColor || sh.color;
+  const cells = normalize(sh.cells);
+  const maxR = Math.max(...cells.map(c => c[0])) + 1;
+  const maxC = Math.max(...cells.map(c => c[1])) + 1;
+  const cellPx = 5;
+  const totalW = maxC * cellPx;
+  const totalH = maxR * cellPx;
+  const offX = (24 - totalW) / 2;
+  const offY = (24 - totalH) / 2;
+  let rects = '';
+  for (const [r, c] of cells) {
+    const x = offX + c * cellPx;
+    const y = offY + r * cellPx;
+    rects += `<rect x="${x}" y="${y}" width="${cellPx - 0.5}" height="${cellPx - 0.5}" rx="0.8" fill="${color}" opacity="0.85"/>`;
+  }
+  return `<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${rects}</svg>`;
+}
+
+/* =========================================================
+   渲染：机巧石库表格
+   ========================================================= */
+function renderStoneTable() {
+  const tbody = document.getElementById("stoneTbody");
+  tbody.innerHTML = "";
+
+  // Fixed CM stone row (匠心石 - always 1 square, non-editable)
+  const cmTr = document.createElement("tr");
+  cmTr.className = "cm-row";
+  cmTr.innerHTML = `
+    <td class="col-quality"><span class="cm-badge">匠心</span></td>
+    <td class="col-shape">
+      <div class="shape-selector">
+        <div class="shape-opt selected" title="正方形（固定）">${getShapeIcon('O', CM_COLOR)}</div>
+      </div>
+    </td>
+    <td class="col-attr"><span class="cm-fixed">—</span></td>
+    <td class="col-base"><span class="cm-fixed">—</span></td>
+    <td class="col-spirit"><span class="cm-fixed">—</span></td>
+    <td class="col-count"><span class="cm-count">1</span></td>
+    <td class="col-actions"><span class="cm-fixed">—</span></td>
+  `;
+  tbody.appendChild(cmTr);
+
+  // Sort by quality: 珍 → 良 → 凡
+  const qOrder = {珍:0, 良:1, 凡:2};
+  const sorted = stones.map((s, i) => ({s, i})).sort((a, b) => (qOrder[a.s.quality]||3) - (qOrder[b.s.quality]||3));
+
+  // Save collapsed state
+  const wasCollapsed = new Set();
+  tbody.querySelectorAll('.q-hdr.collapsed').forEach(h => {
+    const label = h.querySelector('.q-label');
+    if (label) wasCollapsed.add(label.textContent.replace('品',''));
+  });
+
+  // Group stones by quality
+  const groups = {珍:[], 良:[], 凡:[]};
+  sorted.forEach(({s, i}) => { groups[s.quality||'凡'].push({s, i}); });
+
+  // Always render all 3 groups even if empty
+  ['珍','良','凡'].forEach(q => {
+    appendQualityGroup(tbody, q, groups[q], wasCollapsed.has(q));
+  });
+
+  // Bind change events
+  tbody.querySelectorAll('select').forEach(el => {
+    el.addEventListener('change', e => {
+      const idx = +e.target.dataset.idx;
+      const field = e.target.dataset.field;
+      if (!stones[idx]) return;
+      stones[idx][field] = e.target.value;
+      // Attr change: reset spirit if invalid, need re-render for spirit options
+      if (field === 'attr') {
+        const newSpirits = SPIRIT_LIST[e.target.value]?.spirits || [];
+        if (stones[idx].spirit && !newSpirits.includes(stones[idx].spirit)) stones[idx].spirit = '';
+        saveData(); renderStoneTable(); updateLibSummary();
+        return;
+      }
+      // Other fields: save only
+      saveData(); updateLibSummary();
+    });
+  });
+  // Shape click: re-render for visual update
+  tbody.querySelectorAll('.shape-opt').forEach(el => {
+    el.addEventListener('click', e => {
+      const container = e.target.closest('.shape-selector');
+      if (!container) return;
+      const idx = +container.dataset.idx;
+      const opt = e.target.closest('.shape-opt');
+      if (!opt || !stones[idx]) return;
+      stones[idx].shape = opt.dataset.shape;
+      saveData(); renderStoneTable(); updateLibSummary();
+    });
+  });
+  tbody.querySelectorAll('input[type="number"]').forEach(el => {
+    el.addEventListener('input', e => {
+      const idx = +e.target.dataset.idx;
+      const field = e.target.dataset.field;
+      if (!stones[idx]) return;
+      stones[idx][field] = Math.max(0, parseInt(e.target.value, 10) || 0);
+      saveData();
+      updateLibSummary();
+    });
+  });
+  tbody.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const idx = +e.target.dataset.del;
+      stones.splice(idx, 1);
+      saveData();
+      renderStoneTable();
+      updateLibSummary();
+    });
+  });
+}
+
+function appendQualityGroup(tbody, quality, rows, startCollapsed) {
+  const qCls = quality === "珍" ? "zhen" : quality === "良" ? "liang" : "fan";
+  const hdr = document.createElement("tr");
+  hdr.className = "q-hdr q-hdr-" + qCls + (startCollapsed ? " collapsed" : "");
+  hdr.innerHTML = "<td colspan=\"7\"><span class=\"q-arrow\">&#9660;</span><span class=\"q-label\">" + quality + "品</span><span class=\"q-count\">(" + rows.length + ")</span><button class=\"q-add-btn\" onclick=\"event.stopPropagation();addQualityStone('" + quality + "')\" title=\"添加" + quality + "品石头\">+</button></td>";
+  hdr.onclick = function(e) {
+    if (e.target.classList.contains('q-add-btn')) return;
+    var hide = hdr.classList.toggle('collapsed');
+    var next = hdr.nextElementSibling;
+    while (next && next.classList.contains('q-group-row')) {
+      next.classList.toggle('collapsed', hide);
+      next = next.nextElementSibling;
+    }
+  };
+  tbody.appendChild(hdr);
+
+  if (rows.length === 0) {
+    var emptyTr = document.createElement("tr");
+    emptyTr.className = "q-group-row q-empty-row" + (startCollapsed ? " collapsed" : "");
+    emptyTr.innerHTML = "<td colspan=\"7\" class=\"q-empty\">暂无" + quality + "品石头，点击右侧 + 添加</td>";
+    tbody.appendChild(emptyTr);
+    return;
+  }
+
+  rows.forEach(function(row) {
+    var s = row.s, i = row.i;
+    var isFan = s.quality === "凡";
+    var spiritOpts = s.attr && SPIRIT_LIST[s.attr] ? SPIRIT_LIST[s.attr].spirits : [];
+    var spiritDisabled = isFan;
+
+    var tr = document.createElement("tr");
+    tr.className = "q-group-row" + (startCollapsed ? " collapsed" : "");
+    tr.innerHTML = "<td class=\"col-quality\"><span class=\"q-badge q-badge-" + qCls + "\">" + quality + "</span></td>" +
+    "<td class=\"col-shape\"><div class=\"shape-selector\" data-idx=\"" + i + "\">" + SHAPE_KEYS.map(function(k){return "<div class=\"shape-opt" + (s.shape===k?" selected":"") + "\" data-shape=\"" + k + "\" title=\"" + SHAPES[k].name + "\">" + getShapeIcon(k) + "</div>";}).join("") + "</div></td>" +
+    "<td class=\"col-attr\"><select data-idx=\"" + i + "\" data-field=\"attr\">" + ATTR_KEYS.map(function(k){return "<option value=\"" + k + "\"" + (s.attr===k?" selected":"") + ">" + SPIRIT_LIST[k].name + "</option>";}).join("") + "</select></td>" +
+    "<td class=\"col-base\"><select data-idx=\"" + i + "\" data-field=\"baseAttr\"><option value=\"\"" + (!s.baseAttr?" selected":"") + ">无</option>" + BASE_ATTR_KEYS.map(function(k){return "<option value=\"" + k + "\"" + (s.baseAttr===k?" selected":"") + ">" + BASE_ATTR_INFO[k].name + "</option>";}).join("") + "</select></td>" +
+    "<td class=\"col-spirit\"><select data-idx=\"" + i + "\" data-field=\"spirit\"" + (spiritDisabled?" disabled":"") + "><option value=\"\"" + (!s.spirit?" selected":"") + ">（无）</option>" + spiritOpts.map(function(sp){return "<option value=\"" + sp + "\"" + (s.spirit===sp?" selected":"") + ">" + sp + "</option>";}).join("") + "</select></td>" +
+    "<td class=\"col-count\"><input type=\"number\" class=\"count-input\" min=\"0\" max=\"99\" value=\"" + s.count + "\" data-idx=\"" + i + "\" data-field=\"count\" /></td>" +
+    "<td class=\"col-actions\"><button class=\"del-btn\" data-del=\"" + i + "\">×</button></td>";
+    tbody.appendChild(tr);
+    row.el = tr;
+  });
+}
+
+/* =========================================================
+   渲染：库摘要（总面积、灵蕴数等）
+   ========================================================= */
+function updateLibSummary() {
+  const el = document.getElementById("libSummary");
+  let totalArea = 4; // CM stone
+  let spiritStoneCount = 0;
+  let stoneCount = 0;
+  stones.forEach(s => {
+    if (s.count > 0 && SHAPES[s.shape]) {
+      const sz = normalize(SHAPES[s.shape].cells).length;
+      totalArea += sz * s.count;
+      stoneCount += s.count;
+      if (s.quality !== '凡' && s.spirit) spiritStoneCount += s.count;
+    }
+  });
+  let activeN = 0;
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (active[r][c]) activeN++;
+
+  const matchClass = totalArea >= activeN ? 'ok' : (totalArea < activeN ? 'err' : 'warn');
+  el.innerHTML = `石头总数 <b>${stoneCount}</b> 块 · 总面积 <b>${totalArea}</b> 格（含匠心石4格）` +
+    ` · 有灵蕴石头 <b>${spiritStoneCount}</b> 块 · 解锁格子 <b>${activeN}</b> 格 ` +
+    `<span class="${matchClass}">${totalArea >= activeN ? '可填满' : '面积不足'}</span>`;
+}
+
+/* =========================================================
+   渲染：目标灵蕴
+   ========================================================= */
+function renderSpiritGrid() {
+  const grid = document.getElementById("spiritGrid");
+  grid.innerHTML = "";
+  Object.entries(SPIRIT_LIST).forEach(([key, group]) => {
+    if (group.spirits.length === 0) return; // Skip non-spirit attributes (会心/专精/调息/元御)
+    const div = document.createElement("div");
+    div.className = "spirit-group";
+    div.innerHTML = `<div class="spirit-group-title"><span class="attr-dot ${group.icon}"></span>${group.name}共鸣</div>`;
+    const checks = document.createElement("div");
+    checks.className = "spirit-checks";
+    group.spirits.forEach(sp => {
+      const isChecked = spiritTargets.has(sp);
+      const label = document.createElement("label");
+      label.className = "spirit-check" + (isChecked ? ' checked' : '');
+      label.innerHTML = `<input type="checkbox" data-spirit="${sp}" ${isChecked?'checked':''} />${sp}`;
+      label.querySelector('input').addEventListener('change', e => {
+        if (e.target.checked) spiritTargets.add(sp);
+        else spiritTargets.delete(sp);
+        saveData();
+        label.classList.toggle('checked', e.target.checked);
+      });
+      checks.appendChild(label);
+    });
+    div.appendChild(checks);
+    grid.appendChild(div);
+  });
+}
+
+/* =========================================================
+   渲染：目标属性勾选框（会心/专精/调息/元御）
+   ========================================================= */
+function renderAttrTargetGrid() {
+  const grid = document.getElementById("attrTargetGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  BASE_ATTR_KEYS.forEach(key => {
+    const group = BASE_ATTR_INFO[key];
+    const isChecked = attrTargets.has(key);
+    const label = document.createElement("label");
+    label.className = "attr-target-check" + (isChecked ? ' checked' : '');
+    label.innerHTML = `<input type="checkbox" data-attr="${key}" ${isChecked?'checked':''} /><span class="attr-dot ${group.icon}"></span>${group.name}`;
+    label.querySelector('input').addEventListener('change', e => {
+      if (e.target.checked) attrTargets.add(key);
+      else attrTargets.delete(key);
+      saveData();
+      label.classList.toggle('checked', e.target.checked);
+    });
+    grid.appendChild(label);
+  });
+}
+
+/* =========================================================
+   盘面渲染
+   ========================================================= */
+let boardState = { mode: "edit" };
+let drag = { on: false, val: false };
+
+function paintCell(r, c, val) {
+  if (!exists[r][c]) return false;
+  if (active[r][c] === val) return false;
+  active[r][c] = val;
+  return true;
+}
+
+function updateActiveCount() { /* removed */ }
+
+const boardEl = document.getElementById("board");
+
+function renderBoard() {
+  boardEl.style.gridTemplateColumns = `repeat(${COLS}, var(--cell-size))`;
+  boardEl.innerHTML = "";
+  const fill = {};
+  if (boardState.mode === "view" && solutions[solIndex]) {
+    solutions[solIndex].cells.forEach((pl, pid) => {
+      pl.cells.forEach(([r,c], ci) => {
+        fill[r+","+c] = { color: pl.color, pid, spirit: (ci === 0 && pl.spirit) ? pl.spirit : '', baseAttr: (ci === 0 && pl.baseAttr) ? pl.baseAttr : '', isCM: (ci === 0 && pl.name === '匠心石') };
+      });
+    });
+  }
+  const samePiece = (r, c, pid) =>
+    r >= 0 && r < ROWS && c >= 0 && c < COLS && fill[r+","+c] && fill[r+","+c].pid === pid;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const d = document.createElement("div");
+      if (!exists[r][c]) { d.className = "cell void"; boardEl.appendChild(d); continue; }
+      const f = active[r][c] ? fill[r+","+c] : null;
+      if (f) {
+        d.className = "cell piece";
+        d.style.background = f.color;
+        const line = "2px solid rgba(0,0,0,0.5)";
+        d.style.borderTop    = samePiece(r-1, c, f.pid) ? "0" : line;
+        d.style.borderBottom = samePiece(r+1, c, f.pid) ? "0" : line;
+        d.style.borderLeft   = samePiece(r, c-1, f.pid) ? "0" : line;
+        d.style.borderRight  = samePiece(r, c+1, f.pid) ? "0" : line;
+        if (f.isCM) {
+          const lbl = document.createElement("span");
+          lbl.className = "cm-label";
+          lbl.textContent = "匠心石";
+          d.appendChild(lbl);
+        } else {
+          if (f.spirit) {
+            const lbl = document.createElement("span");
+            lbl.className = f.baseAttr ? "spirit-label top" : "spirit-label";
+            lbl.textContent = f.spirit;
+            d.appendChild(lbl);
+          }
+          if (f.baseAttr && BASE_ATTR_INFO[f.baseAttr]) {
+            const bal = document.createElement("span");
+            bal.className = f.spirit ? "baseattr-label bottom" : "baseattr-label";
+            bal.textContent = BASE_ATTR_INFO[f.baseAttr].name;
+            d.appendChild(bal);
+          }
+        }
+      } else {
+        d.className = "cell " + (active[r][c] ? "active" : "locked");
+      }
+      d.addEventListener("mousedown", (e) => {
+        if (boardState.mode !== "edit" || !exists[r][c]) return;
+        e.preventDefault();
+        clearSolutions();
+        drag.on = true;
+        drag.val = !active[r][c];
+        if (paintCell(r, c, drag.val)) {
+          updateActiveCount();
+          updateLibSummary();
+          renderBoard();
+          saveData();
+        }
+      });
+      d.addEventListener("mouseenter", () => {
+        if (!drag.on || boardState.mode !== "edit") return;
+        if (paintCell(r, c, drag.val)) {
+          updateActiveCount();
+          updateLibSummary();
+          renderBoard();
+          saveData();
+        }
+      });
+      boardEl.appendChild(d);
+    }
+  }
+}
+
+boardEl.addEventListener("mouseleave", () => { drag.on = false; });
+document.addEventListener("mouseup", () => { drag.on = false; });
+
+/* =========================================================
+   统一求解器
+   - 白嫖: spirit='' 只参与填格
+   - 良/珍品: 带灵蕴, 参与灵蕴计分
+   - 不勾选目标 = 纯填格模式
+   ========================================================= */
+let solutions = [];
+let solIndex = 0;
+
+function clearSolutions() {
+  solutions = []; solIndex = 0;
+  document.getElementById("navBar").style.display = "none";
+  document.getElementById("spiritSummary").style.display = "none";
+  if (boardState.mode === "view") { boardState.mode = "edit"; syncModeButtons(); }
+}
+
+function solve(maxSolutions) {
+  const cellList = [];
+  const posIndex = new Map();
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      if (active[r][c]) { posIndex.set(r+","+c, cellList.length); cellList.push([r,c]); }
+  const N = cellList.length;
+  if (N === 0) return { solutions: [], reason: "empty" };
+
+  // Build pieces: CM stone + user stones (merge identical pieces to avoid duplicate solutions)
+  const pieces = [{
+    name: cmStone.name, color: cmStone.color, isCM: true, spirit: '', attr: '', baseAttr: '',
+    orients: orientations(cmStone.cells), size: normalize(cmStone.cells).length, count: 1
+  }];
+  // Merge identical stones (same shape + color + quality + spirit + attr + baseAttr) into one piece entry with combined count
+  const pieceMap = new Map();
+  stones.forEach(s => {
+    if (s.count <= 0) return;
+    const sh = SHAPES[s.shape];
+    if (!sh) return;
+    const hasSpirit = s.quality !== '凡' && s.spirit;
+    const key = sh.name + ':' + sh.color + ':' + s.quality + ':' + (hasSpirit ? s.spirit : '') + ':' + (s.attr || '') + ':' + (s.baseAttr || '');
+    if (pieceMap.has(key)) {
+      pieceMap.get(key).count += s.count;
+    } else {
+      pieceMap.set(key, {
+        name: sh.name, color: sh.color, isCM: false,
+        spirit: hasSpirit ? s.spirit : '',
+        attr: s.attr || '',
+        baseAttr: s.baseAttr || '',
+        orients: orientations(sh.cells), size: normalize(sh.cells).length, count: s.count
+      });
+    }
+  });
+  pieces.push(...pieceMap.values());
+
+  const cmSize = pieces[0].size;
+  if (cmSize > N) return { solutions: [], reason: "cm-too-big" };
+
+  const targetSet = spiritTargets;
+  const attrTargetSet = attrTargets;
+  const covered = new Array(N).fill(false);
+  const remaining = pieces.map(p => p.count);
+  let cmUsed = 0;
+  const placements = [];
+  const found = [];
+  let steps = 0, aborted = false;
+  const STEP_LIMIT = 12000000;
+
+  function firstEmpty(start) { for (let i = start; i < N; i++) if (!covered[i]) return i; return -1; }
+
+  function calcScore(placements) {
+    const spiritCount = {};
+    let targetHit = 0;
+    let totalSpirit = 0;
+    let attrHit = 0;
+    placements.forEach(p => {
+      if (p.spirit) {
+        spiritCount[p.spirit] = (spiritCount[p.spirit] || 0) + 1;
+        totalSpirit += 1;
+        if (targetSet.has(p.spirit)) targetHit += 1;
+      }
+      if (p.baseAttr && attrTargetSet.has(p.baseAttr)) attrHit += 1;
+    });
+    return { spiritCount, targetHit, totalSpirit, attrHit, filled: placements.length };
+  }
+
+  function bt(start) {
+    if (found.length >= maxSolutions || aborted) return;
+    if (++steps > STEP_LIMIT) { aborted = true; return; }
+    const cellIdx = firstEmpty(start);
+    if (cellIdx === -1) {
+      if (cmUsed === 1) {
+        const score = calcScore(placements);
+        found.push({
+          cells: placements.map(p => ({
+            cells: p.cells.map(i => cellList[i]),
+            color: p.color, name: p.name, spirit: p.spirit, attr: p.attr, baseAttr: p.baseAttr
+          })),
+          ...score
+        });
+      }
+      return;
+    }
+    const target = cellList[cellIdx];
+    for (let p = 0; p < pieces.length; p++) {
+      if (remaining[p] <= 0) continue;
+      const piece = pieces[p];
+      if (piece.isCM && cmUsed >= 1) continue;
+      for (const orient of piece.orients) {
+        for (const anchor of orient) {
+          const offR = target[0] - anchor[0], offC = target[1] - anchor[1];
+          let ok = true; const idxs = [];
+          for (const [dr, dc] of orient) {
+            const idx = posIndex.get((dr+offR)+","+(dc+offC));
+            if (idx === undefined || covered[idx]) { ok = false; break; }
+            idxs.push(idx);
+          }
+          if (!ok) continue;
+          for (const idx of idxs) covered[idx] = true;
+          remaining[p]--; if (piece.isCM) cmUsed++;
+          placements.push({ cells: idxs, color: piece.color, name: piece.name, spirit: piece.spirit, attr: piece.attr, baseAttr: piece.baseAttr });
+          bt(cellIdx);
+          placements.pop();
+          remaining[p]++; if (piece.isCM) cmUsed--;
+          for (const idx of idxs) covered[idx] = false;
+          if (found.length >= maxSolutions || aborted) return;
+        }
+      }
+    }
+  }
+  bt(0);
+
+  // Sort: targetHit desc, attrHit desc, totalSpirit desc, filled desc
+  found.sort((a, b) => {
+    if (a.targetHit !== b.targetHit) return b.targetHit - a.targetHit;
+    if (a.attrHit !== b.attrHit) return b.attrHit - a.attrHit;
+    if (a.totalSpirit !== b.totalSpirit) return b.totalSpirit - a.totalSpirit;
+    if (a.filled !== b.filled) return b.filled - a.filled;
+    return 0;
+  });
+
+  return { solutions: found, reason: aborted ? "aborted" : "done", N, cmSize };
+}
+
+function showSolution(i) {
+  if (solutions.length === 0) return;
+  solIndex = (i + solutions.length) % solutions.length;
+  document.getElementById("counter").textContent = `${solIndex + 1} / ${solutions.length}`;
+  renderBoard();
+  renderSpiritSummary();
+}
+
+function renderSpiritSummary() {
+  const sol = solutions[solIndex];
+  if (!sol) {
+    document.getElementById("spiritSummary").style.display = "none";
+    return;
+  }
+  const box = document.getElementById("spiritSummary");
+  box.style.display = "block";
+  const row = document.getElementById("ssRow");
+  const entries = Object.entries(sol.spiritCount).sort((a, b) => b[1] - a[1]);
+  // Attribute info - show ALL placed attributes, highlight targeted ones
+  let attrHtml = '';
+  const attrCount = {};
+  solutions[solIndex].cells.forEach(pl => {
+    if (pl.baseAttr) {
+      attrCount[pl.baseAttr] = (attrCount[pl.baseAttr] || 0) + 1;
+    }
+  });
+  const attrEntries = Object.entries(attrCount).sort((a, b) => b[1] - a[1]);
+  if (attrEntries.length > 0) {
+    attrHtml = '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);">' +
+      '<span style="color:var(--gold);font-weight:600;">激活基础属性：</span>' +
+      attrEntries.map(([key, n]) => {
+        const g = BASE_ATTR_INFO[key];
+        const isTarget = attrTargets.size > 0 && attrTargets.has(key);
+        return `<span class="ss-item ${isTarget ? 'hit' : ''}"><span class="attr-dot ${g?.icon}"></span>${g?.name || key} x<span class="num">${n}</span></span>`;
+      }).join('') + '</div>';
+  }
+  if (entries.length === 0) {
+    row.innerHTML = '<span class="ss-empty">本方案无灵蕴激活（纯填格）</span>' + attrHtml;
+    return;
+  }
+  row.innerHTML = entries.map(([sp, n]) => {
+    const isTarget = spiritTargets.has(sp);
+    return `<span class="ss-item ${isTarget ? 'hit' : ''}">${sp} x<span class="num">${n}</span></span>`;
+  }).join('') + attrHtml;
+}
+
+function syncModeButtons() {
+  document.querySelectorAll("#modeToggle button").forEach(b => b.classList.toggle("on", b.dataset.mode === boardState.mode));
+  renderBoard();
+  renderSpiritSummary();
+}
+
+/* =========================================================
+   交互绑定
+   ========================================================= */
+document.getElementById("syncCharBtn").addEventListener("click", () => {
+  const result = syncFromTracker();
+  const info = document.getElementById('syncInfo');
+  if (result.ok) {
+    info.textContent = '已同步看板(' + result.total + '角色' + (result.added > 0 ? '，新增' + result.added : '') + ')';
+    info.style.color = 'var(--green)';
+    renderCharSelect();
+  } else {
+    info.textContent = result.reason;
+    info.style.color = 'var(--red)';
+  }
+});
+
+function addCharHandler() {
+  // Replace button with input field
+  const btn = document.getElementById("addCharBtn");
+  if (!btn) return;
+  const wrap = btn.parentElement;
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "char-add-input";
+  input.placeholder = "角色名";
+  input.maxLength = 20;
+  btn.replaceWith(input);
+  input.focus();
+  function commit() {
+    const name = input.value.trim();
+    if (name) {
+      // Check if name already exists
+      const chars = getCharList();
+      if (!chars.includes(name)) {
+        // Add to charList
+        if (!charList.includes(name)) charList.push(name);
+        // Save current and switch
+        if (currentChar) {
+          charData[currentChar] = {
+            stones: stones, spiritTargets: [...spiritTargets], attrTargets: [...attrTargets], active: active
+          };
+        }
+        currentChar = name;
+        stones = [];
+        spiritTargets = new Set();
+        attrTargets = new Set();
+        active = makeActive();
+        clearSolutions();
+        saveData();
+        renderCharSelect();
+        renderStoneTable();
+        renderSpiritGrid();
+        renderAttrTargetGrid();
+        renderBoard();
+        updateActiveCount();
+        updateLibSummary();
+      } else {
+        // Switch to existing character
+        switchChar(name);
+      }
+    }
+    // Restore button
+    const newBtn = document.createElement("button");
+    newBtn.id = "addCharBtn";
+    newBtn.textContent = "+角色";
+    newBtn.style.cssText = "padding:4px 8px;font-size:12px;";
+    newBtn.addEventListener("click", addCharHandler);
+    input.replaceWith(newBtn);
+  }
+  input.addEventListener("blur", commit);
+  input.addEventListener("keydown", ev => {
+    if (ev.key === "Enter") { ev.preventDefault(); input.blur(); }
+    if (ev.key === "Escape") { input.value = ""; input.blur(); }
+  });
+}
+
+document.getElementById("addCharBtn").addEventListener("click", addCharHandler);
+
+function addQualityStone(quality) {
+  stones.push({ id: ++nextStoneId, quality: quality, shape: 'O', attr: 'fire', baseAttr: '', spirit: '', count: 1 });
+  saveData();
+  renderStoneTable();
+  updateLibSummary();
+}
+
+document.getElementById("clearTargetsBtn").addEventListener("click", () => {
+  spiritTargets.clear();
+  saveData();
+  renderSpiritGrid();
+});
+
+document.getElementById("clearAttrTargetsBtn").addEventListener("click", () => {
+  attrTargets.clear();
+  saveData();
+  renderAttrTargetGrid();
+});
+
+let resetClickCount = 0;
+document.getElementById("resetDataBtn").addEventListener("click", () => {
+  resetClickCount++;
+  const btn = document.getElementById("resetDataBtn");
+  if (resetClickCount === 1) {
+    btn.textContent = "再点一下确认";
+    btn.style.borderColor = "var(--red)";
+    btn.style.color = "var(--red)";
+    setTimeout(() => { resetClickCount = 0; btn.textContent = "重置数据"; btn.style.borderColor = ""; btn.style.color = ""; }, 3000);
+  } else {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(V2_KEY);
+    localStorage.removeItem('zhuxian_jqpan_v1');
+    location.reload();
+  }
+});
+
+document.getElementById("solveBtn").addEventListener("click", () => {
+  if (window._jqpanComputing) return;
+  const maxSol = Math.max(1, parseInt(document.getElementById("maxSolutions").value || "30", 10));
+  const sortMode = document.getElementById("sortMode").value;
+  const statusEl = document.getElementById("status");
+
+  try {
+  // Pre-check: count active cells and total stone area
+  let activeN = 0;
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (active[r][c]) activeN++;
+  let totalArea = 4; // CM stone
+  let stoneCount = 0;
+  stones.forEach(s => {
+    if (s.count > 0 && SHAPES[s.shape]) {
+      totalArea += normalize(SHAPES[s.shape].cells).length * s.count;
+      stoneCount += s.count;
+    }
+  });
+  if (activeN === 0) {
+    statusEl.innerHTML = '<span class="err">盘面没有解锁格子，先点亮。</span>';
+    return;
+  }
+  if (stoneCount === 0) {
+    statusEl.innerHTML = '<span class="err">还没添加石头。</span>先加一块石头。';
+    return;
+  }
+  if (totalArea < activeN) {
+    statusEl.innerHTML = `<span class="err">面积不够</span>：总共 ${totalArea} 格，要填 ${activeN} 格，差 ${activeN - totalArea} 格。`;
+    return;
+  }
+  } catch(preErr) {
+    statusEl.innerHTML = '<span class="err">预检出错：' + (preErr.message || preErr) + '</span>';
+    return;
+  }
+
+  window._jqpanComputing = true;
+  statusEl.innerHTML = "计算中......";
+  setTimeout(() => {
+    try {
+    const t0 = Date.now();
+    const res = solve(maxSol);
+    const dt = ((Date.now() - t0) / 1000).toFixed(2);
+    solutions = res.solutions; solIndex = 0;
+
+    // Re-sort by spirit type if selected
+    if (sortMode === 'spirit' && spiritTargets.size > 0) {
+      solutions.sort((a, b) => {
+        for (const sp of spiritTargets) {
+          const diff = (b.spiritCount[sp] || 0) - (a.spiritCount[sp] || 0);
+          if (diff !== 0) return diff;
+        }
+        return b.totalSpirit - a.totalSpirit;
+      });
+    }
+
+    if (res.reason === "empty") {
+      statusEl.innerHTML = `<span class="err">盘面没解锁任何格子。</span>`;
+      document.getElementById("navBar").style.display = "none";
+      document.getElementById("spiritSummary").style.display = "none";
+      return;
+    }
+    if (res.reason === "cm-too-big") {
+      statusEl.innerHTML = `<span class="err">匠心石比解锁区域还大。</span>`;
+      document.getElementById("navBar").style.display = "none";
+      return;
+    }
+    if (solutions.length === 0) {
+      statusEl.innerHTML = `<span class="err">无解 😵</span>：无法用当前石头填满 <b>${res.N}</b> 格。检查石头面积和数量。`;
+      document.getElementById("navBar").style.display = "none";
+      return;
+    }
+    const targetInfo = spiritTargets.size > 0 ? `目标 ${[...spiritTargets].join('、')}` : '无目标，纯填格';
+    const attrInfo = attrTargets.size > 0 ? ` · 属性目标 ${[...attrTargets].map(k => BASE_ATTR_INFO[k]?.name || k).join('、')}` : '';
+    const more = res.reason === "aborted" ? "（算力拉满了）" : (solutions.length >= maxSol ? "（方案满了）" : "");
+    statusEl.innerHTML =
+      `<span class="ok">找到 ${solutions.length} 种摆法</span> ${more}<br/>` +
+      `<span class="small">${targetInfo}${attrInfo} · 用时 ${dt}s</span>`;
+    boardState.mode = "view"; syncModeButtons();
+    document.getElementById("navBar").style.display = "flex";
+    showSolution(0);
+    } catch(err) {
+      let msg = err && err.message ? err.message : String(err);
+      let stack = err && err.stack ? err.stack.split('\n').slice(0,3).join(' | ') : '';
+      statusEl.innerHTML = '<span class="err">计算出错：' + msg + '</span>' +
+        (stack ? '<br/><span class="small">' + stack + '</span>' : '') +
+        '<br/><span class="small">截图这段错误反馈给我。</span>';
+    } finally {
+      window._jqpanComputing = false;
+    }
+  }, 30);
+});
+
+document.getElementById("prevBtn").addEventListener("click", () => showSolution(solIndex - 1));
+document.getElementById("nextBtn").addEventListener("click", () => showSolution(solIndex + 1));
+
+document.querySelectorAll("#modeToggle button").forEach(b => {
+  b.addEventListener("click", () => {
+    if (b.dataset.mode === "view" && solutions.length === 0) return;
+    boardState.mode = b.dataset.mode; syncModeButtons();
+  });
+});
+
+document.getElementById("allOn").addEventListener("click", () => {
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (exists[r][c]) active[r][c] = true;
+  clearSolutions(); renderBoard(); updateActiveCount(); updateLibSummary(); saveData();
+});
+document.getElementById("allOff").addEventListener("click", () => {
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) active[r][c] = false;
+  clearSolutions(); renderBoard(); updateActiveCount(); updateLibSummary(); saveData();
+});
+document.getElementById("resetBoard").addEventListener("click", () => {
+  active = makeActive();
+  clearSolutions(); renderBoard(); updateActiveCount(); updateLibSummary(); saveData();
+});
+
+/* =========================================================
+   初始化
+   ========================================================= */
+renderCharSelect();
+renderStoneTable();
+renderSpiritGrid();
+renderAttrTargetGrid();
+renderBoard();
+updateActiveCount();
+updateLibSummary();
+</script>
+</body>
+</html>

@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>诛仙世界 S4 搬砖看板</title>
+  <script src="https://unpkg.com/lucide@0.344.0"></script>
+  <style>
+/* === 诛仙世界 S4 · 搬砖看板 v2 — Premium Dark Dashboard === */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#09090b;--card:#121215;--card2:#18181c;--border:#252529;--border2:#1c1c20;
+  --text:#e4e4e7;--text-dim:#8b949e;--muted:#71717a;--dim:#52525b;
+  --primary:#c9a84c;--primary-dim:#b8962e;--gold:#c9a84c;
+  --green:#22c55e;--yellow:#f59e0b;--red:#ef4444;--blue:#3b82f6;
+  --teal:#14b8a6;--purple:#a855f7;--rose:#f43f5e;--amber:#f59e0b;
+  --radius:10px;--radius-sm:6px;--radius-lg:14px;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.25);
+  --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding:28px 20px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.container{max-width:1280px;margin:0 auto}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:var(--dim)}
+
+/* Header */
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:14px}
+h1{font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.3px;display:flex;align-items:center;gap:10px}
+h1::before{content:'';display:inline-block;width:8px;height:28px;background:var(--primary);border-radius:4px}
+.header-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* Badges / status */
+.badge{background:var(--card2);border:1px solid var(--border);padding:7px 14px;border-radius:var(--radius-sm);font-size:12.5px;white-space:nowrap;color:var(--muted)}
+.badge.highlight{border-color:var(--primary-dim);color:var(--primary)}
+.save-status{padding:7px 14px;border-radius:var(--radius-sm);font-size:12.5px;white-space:nowrap}
+.save-status.linked{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);color:var(--green)}
+.save-status.unlinked{background:rgba(234,179,8,.06);border:1px solid rgba(234,179,8,.25);color:var(--yellow)}
+
+/* Tools bar */
+.tools-bar{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+.tools-bar .btn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;padding:10px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;background:var(--card);border:1px solid var(--border);color:var(--muted);transition:all .2s}
+.tools-bar .btn:hover{background:var(--card2);color:var(--text);transform:translateY(-1px);box-shadow:var(--shadow)}
+.tools-bar .btn.accent-purple:hover{border-color:var(--purple);color:var(--purple)}
+.tools-bar .btn.accent-teal:hover{border-color:var(--teal);color:var(--teal)}
+.tools-bar .btn.accent-amber:hover{border-color:var(--amber);color:var(--amber)}
+.tools-bar .btn.accent-rose:hover{border-color:var(--rose);color:var(--rose)}
+.tools-bar .btn svg{width:16px;height:16px;opacity:.7;transition:opacity .2s}
+.tools-bar .btn:hover svg{opacity:1}
+
+/* Progress bar */
+.overall-bar-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:24px}
+.ob-header{display:flex;justify-content:space-between;margin-bottom:10px;font-size:13.5px}
+.ob-header span:first-child{font-weight:600}
+.ob-header span:last-child{color:var(--primary);font-weight:700}
+.overall-bar{height:6px;background:var(--border2);border-radius:3px;overflow:hidden}
+.overall-bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),#e8c86a);border-radius:3px;transition:width .6s ease}
+
+/* Summary cards */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:28px}
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;text-align:center;transition:all .2s}
+.summary-card:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--shadow)}
+.s-label{font-size:11.5px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.s-value{font-size:24px;font-weight:800;color:var(--text)}
+.s-bar{height:4px;background:var(--border2);border-radius:2px;margin-top:10px;overflow:hidden}
+.s-bar-fill{height:100%;border-radius:2px;transition:width .5s ease}
+
+/* Section card */
+.section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:24px}
+.section-card h2{font-size:15px;font-weight:700;color:var(--text);margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.section-card h2::before{content:'';display:inline-block;width:3px;height:16px;border-radius:2px}
+.accent-teal h2::before,.section-card.events h2::before{background:var(--teal)}
+.accent-purple h2::before,.section-card.batch h2::before{background:var(--purple)}
+.accent-green h2::before,.section-card.silver h2::before{background:var(--green)}
+.accent-amber h2::before,.section-card.notes h2::before{background:var(--amber)}
+
+/* Table */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:auto;margin-bottom:12px;max-height:70vh}
+table{width:100%;border-collapse:collapse;min-width:1100px}
+thead{position:sticky;top:0;z-index:10}
+th,td{padding:11px 10px;text-align:center;border-bottom:1px solid var(--border2);font-size:13px}
+th{background:var(--card2);font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+th:first-child,td:first-child{text-align:left;padding-left:18px;min-width:120px}
+tr:hover td{background:rgba(109,106,246,.04)}
+.char-cell{display:flex;align-items:center;gap:6px}
+.char-name{cursor:pointer;padding:5px 8px;border-radius:var(--radius-sm);transition:background .15s;font-weight:500}
+.char-name:hover{background:var(--border)}
+.char-name input{background:var(--bg);border:1px solid var(--primary);color:var(--text);padding:4px 8px;border-radius:4px;font-size:14px;font-family:var(--font)}
+.btn-remove{width:22px;height:22px;border-radius:5px;border:1px solid rgba(239,68,68,.3);background:transparent;color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;opacity:.5}
+.btn-remove:hover{opacity:1;background:rgba(239,68,68,.1)}
+
+/* Counter */
+.counter{display:inline-flex;align-items:center;gap:4px}
+.c-btn{width:26px;height:26px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--card2);color:var(--text);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none}
+.c-btn:hover{background:var(--border);border-color:var(--primary)}
+.c-btn:active{transform:scale(.92)}
+.c-val{min-width:28px;text-align:center;font-weight:700;font-size:14px}
+.c-max{color:var(--dim);font-size:11px}
+.c-zero{color:var(--red)}
+.c-partial{color:var(--yellow)}
+.c-done{color:var(--green)}
+
+/* Toggle */
+.toggle{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--card2);color:var(--muted);cursor:pointer;font-size:12px;transition:all .2s;white-space:nowrap}
+.toggle.done{background:rgba(34,197,94,.1);border-color:var(--green);color:var(--green)}
+.toggle:hover{border-color:var(--primary)}
+
+/* Buttons */
+.btn{padding:9px 18px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:12.5px;transition:all .2s;white-space:nowrap;font-family:var(--font);font-weight:500}
+.btn:hover{border-color:var(--primary);background:var(--card2)}
+.btn-danger{border-color:rgba(239,68,68,.4);color:var(--red)}
+.btn-danger:hover{background:rgba(239,68,68,.08);border-color:var(--red)}
+.btn-gold{border-color:rgba(109,106,246,.35);color:var(--primary)}
+.btn-gold:hover{background:rgba(109,106,246,.08)}
+.add-char-btn{width:100%;padding:11px;margin-bottom:24px;font-weight:600}
+
+/* Batch ops */
+.batch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.batch-item{display:flex;align-items:center;gap:8px;background:var(--card2);padding:10px 14px;border-radius:var(--radius-sm)}
+.batch-item span{font-size:12px;color:var(--muted);white-space:nowrap}
+
+/* Activity tags */
+.act-tag{display:inline-flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--border);padding:6px 12px;border-radius:var(--radius-sm);font-size:12px}
+.act-tag-del{width:18px;height:18px;border-radius:4px;border:none;background:transparent;color:var(--red);cursor:pointer;font-size:13px;opacity:.6;display:flex;align-items:center;justify-content:center}
+.act-tag-del:hover{opacity:1;background:rgba(239,68,68,.1)}
+.act-add-form{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.act-add-form input,.act-add-form select{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--radius-sm);font-size:13px;font-family:var(--font)}
+.act-add-form input[type=text]{width:140px}.act-add-form input[type=number]{width:56px}
+
+/* Silver tracking */
+.silver-table{width:100%;border-collapse:collapse}
+.silver-table th,.silver-table td{padding:10px 14px;text-align:center;border-bottom:1px solid var(--border2)}
+.silver-table th{color:var(--muted);font-size:11px;font-weight:700}
+.silver-table td:first-child,.silver-table th:first-child{text-align:left;padding-left:18px}
+.silver-input{width:110px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:var(--radius-sm);font-size:14px;text-align:right;font-family:var(--font)}
+.silver-input:focus{outline:none;border-color:var(--primary)}
+.silver-delta.up{color:var(--green)}.silver-delta.down{color:var(--red)}.silver-delta.flat{color:var(--dim)}
+.silver-total-row{background:var(--card2);font-weight:700}
+.silver-summary{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:18px}
+.silver-stat{display:flex;flex-direction:column;gap:3px}
+.silver-stat-label{font-size:12px;color:var(--muted)}
+.silver-stat-val{font-size:22px;font-weight:800}
+
+/* Fixed events */
+.events-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.event-card{background:var(--card2);border-radius:var(--radius);padding:18px;display:flex;align-items:flex-start;gap:14px;border-left:3px solid transparent;transition:all .2s}
+.event-card:hover{border-left-color:var(--primary)}
+.event-card.active{background:rgba(34,197,94,.05)}
+.event-card.upcoming{}
+.event-card.passed{opacity:.35}
+.ev-icon{font-size:22px;flex-shrink:0;width:28px;text-align:center}
+.ev-name{font-weight:700;font-size:14px}
+.ev-time{color:var(--yellow);font-size:13px;margin-top:3px}
+.ev-desc{color:var(--muted);font-size:11.5px;margin-top:2px}
+.ev-badge{font-size:11px;padding:2px 8px;border-radius:10px;margin-top:5px;display:inline-block;font-weight:600}
+.ev-badge.active{background:rgba(34,197,94,.15);color:var(--green)}
+.ev-badge.scheduled{background:rgba(234,179,8,.12);color:var(--yellow)}
+.ev-badge.closed{background:var(--border);color:var(--dim)}
+
+/* Event type colors */
+.ev-fengyun{border-left-color:#3b82f6}.ev-fengyun.active{border-left-color:var(--green);background:rgba(34,197,94,.06)}
+.ev-xiexiao{border-left-color:#f43f5e}.ev-xiexiao.active{border-left-color:var(--green);background:rgba(34,197,94,.06)}
+.ev-lingzun{border-left-color:#a855f7}.ev-lingzun.active{border-left-color:var(--green);background:rgba(34,197,94,.06)}
+.ev-baihua{border-left-color:#ec4899}.ev-baihua.active{border-left-color:var(--green);background:rgba(34,197,94,.06)}
+.ev-boguan{border-left-color:#f59e0b}.ev-boguan.active{border-left-color:var(--green);background:rgba(34,197,94,.06)}
+.ev-boss{border-left-color:#f97316}.ev-boss.active{border-left-color:var(--green);background:rgba(34,197,94,.06)}
+.ev-yabiao{border-left-color:#22c55e}.ev-yabiao.active{border-left-color:var(--green);background:rgba(34,197,94,.06)}
+.ev-hongjun{border-left-color:#dc2626}.ev-hongjun.active{border-left-color:var(--green);background:rgba(34,197,94,.06)}
+.ev-muye{border-left-color:#6366f1}.ev-muye.active{border-left-color:var(--green);background:rgba(34,197,94,.06)}
+.ev-banghui{border-left-color:#06b6d4}.ev-banghui.active{border-left-color:var(--green);background:rgba(34,197,94,.06)}
+.ev-xuanji{border-left-color:#eab308}.ev-xuanji.active{border-left-color:var(--green);background:rgba(34,197,94,.06)}
+.ev-diaoyu{border-left-color:#84cc16}.ev-diaoyu.active{border-left-color:var(--green);background:rgba(34,197,94,.06)}
+
+/* Notes */
+.notes-area{width:100%;min-height:90px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:14px;font-size:14px;font-family:var(--font);resize:vertical;line-height:1.7}
+.notes-area:focus{outline:none;border-color:var(--primary)}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--green);color:var(--green);padding:12px 20px;border-radius:var(--radius-sm);font-size:13px;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;z-index:999}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* Modal */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:1000}
+.modal-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;max-width:380px;width:90%;text-align:center}
+.modal-box p{font-size:14px;line-height:1.7;margin-bottom:20px}
+.modal-btns{display:flex;gap:10px;justify-content:center}
+
+/* Collapsible */
+.collapse-toggle{cursor:pointer;user-select:none;display:flex;align-items:center;gap:8px}
+.collapse-toggle::after{content:'▾';font-size:11px;color:var(--dim);transition:transform .2s}
+.collapse-toggle.collapsed::after{transform:rotate(-90deg)}
+.collapse-body{overflow:hidden;transition:max-height .3s ease}
+.collapse-body.collapsed{max-height:0}
+
+/* Drag overlay */
+.drag-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(9,9,11,.9);display:none;align-items:center;justify-content:center;z-index:2000;pointer-events:none}
+.drag-overlay.show{display:flex}
+.drag-box{border:2px dashed var(--primary);border-radius:var(--radius-lg);padding:48px 60px;text-align:center;background:var(--card)}
+.drag-box .drag-icon{font-size:40px;margin-bottom:12px}
+.drag-box .drag-text{font-size:17px;color:var(--primary)}
+
+/* Tool icons - inline SVG */
+.tool-icon{display:inline-block;vertical-align:middle}
+
+@media(max-width:700px){
+  body{padding:14px 10px}
+  h1{font-size:18px}
+  .summary-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .summary-card{padding:14px}.s-value{font-size:20px}
+  th,td{padding:8px 6px;font-size:11px}
+  .c-btn{width:22px;height:22px;font-size:12px}
+  .events-grid{grid-template-columns:1fr}
+  .tools-bar{gap:6px}.tools-bar .btn{padding:8px 12px;font-size:11px}
+  .section-card{padding:16px;margin-bottom:16px}
+  .overall-bar-wrap{padding:14px 16px;margin-bottom:20px}
+}
+
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- Header -->
+  <header>
+    <h1>诛仙世界 S4 · 搬砖看板</h1>
+    <div class="header-right">
+      <div class="save-status unlinked" id="saveStatus">本地存储</div>
+      <div class="badge" id="weekInfo">--</div>
+      <div class="badge highlight" id="resetCountdown">--</div>
+      <button class="btn btn-gold" onclick="bindSaveFile()">绑定存档</button>
+      <button class="btn btn-gold" onclick="resetWeekly()">重置周常</button>
+      <button class="btn" onclick="exportData()">导出</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(this)">
+      <button class="btn" onclick="document.getElementById('importFile').click()">导入</button>
+    </div>
+  </header>
+
+  <!-- Tools bar -->
+  <div class="tools-bar">
+    <a href="zhuxian-jqpan.html" class="btn accent-purple"><i data-lucide="grid-3x3" width="15" height="15"></i>天工机巧盘</a>
+    <a href="zhuxian-tianxu.html" class="btn accent-teal"><i data-lucide="compass" width="15" height="15"></i>天墟秘境</a>
+    <a href="zhuxian-auction.html" class="btn accent-amber"><i data-lucide="coins" width="15" height="15"></i>竞拍出价器</a>
+    <a href="zhuxian-combo.html" class="btn accent-rose"><i data-lucide="swords" width="15" height="15"></i>连招配置</a>
+  </div>
+
+  <!-- Overall Progress -->
+  <div class="overall-bar-wrap">
+    <div class="ob-header">
+      <span>本周总进度</span>
+      <span id="overallPct">0%</span>
+    </div>
+    <div class="overall-bar">
+      <div class="overall-bar-fill" id="overallFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid" id="summaryGrid"></div>
+
+  <!-- Fixed Time Events -->
+  <div class="section-card events">
+    <h2>固定时间活动总览</h2>
+    <div class="events-grid" id="eventsGrid"></div>
+  </div>
+
+  <!-- Activity Table -->
+  <div class="table-wrap">
+    <table>
+      <thead id="tableHeader"></thead>
+      <tbody id="charTableBody"></tbody>
+      <tfoot id="tableFooter"></tfoot>
+    </table>
+  </div>
+  <button class="btn btn-gold add-char-btn" onclick="addCharacter()">添加角色</button>
+
+  <!-- Batch Operations -->
+  <div class="section-card batch">
+    <h2>批量操作</h2>
+    <div class="batch-grid" id="batchOps"></div>
+  </div>
+
+  <!-- Silver Tracking -->
+  <div class="section-card silver">
+    <h2>银两统计</h2>
+    <div class="silver-summary" id="silverSummary"></div>
+    <table class="silver-table">
+      <thead>
+        <tr><th>角色</th><th>本周银两</th><th>上周银两</th><th>变化</th></tr>
+      </thead>
+      <tbody id="silverTableBody"></tbody>
+      <tfoot id="silverTableFoot"></tfoot>
+    </table>
+  </div>
+
+  <!-- Notes -->
+  <div class="section-card">
+    <h2>收益记录 & 备注</h2>
+    <textarea class="notes-area" id="earningsNotes" placeholder="记录每日收益、掉落情况、注意事项等...&#10;例: 7/26 角色1-4 风云10次全清，收益约X万银两" oninput="saveNotes()"></textarea>
+  </div>
+
+  <!-- Activity Management (collapsible) -->
+  <div class="section-card">
+    <h2 class="collapse-toggle collapsed" onclick="toggleCollapse(this)">活动项目管理</h2>
+    <div class="collapse-body collapsed" id="actMgmtBody">
+      <div class="act-add-form">
+        <input type="text" id="newActName" placeholder="活动名称">
+        <select id="newActType">
+          <option value="counter">次数计数</option>
+          <option value="toggle">完成开关</option>
+        </select>
+        <input type="number" id="newActMax" min="1" value="1" title="次数上限">
+        <select id="newActPeriod">
+          <option value="周">每周</option>
+          <option value="天">每天</option>
+        </select>
+        <button class="btn btn-gold" onclick="addActivity()">+ 添加</button>
+      </div>
+      <div id="actList" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+    </div>
+  </div>
+
+  <div style="text-align:center;color:var(--text-dim);font-size:12px;padding:12px 0 20px;">
+    绑定存档后自动存本地文件，换设备也不丢。也可以直接拖 .json 导入。
+  </div>
+</div>
+
+<!-- Custom Confirm Modal -->
+<div class="modal-overlay" id="confirmModal" onclick="if(event.target===this)closeConfirm(false)">
+  <div class="modal-box">
+    <p id="confirmMsg"></p>
+    <div class="modal-btns">
+      <button class="btn" onclick="closeConfirm(false)">取消</button>
+      <button class="btn btn-danger" onclick="closeConfirm(true)">确定</button>
+    </div>
+  </div>
+</div>
+
+<div class="drag-overlay" id="dragOverlay">
+  <div class="drag-box">
+    <div class="drag-icon">↑↓</div>
+    <div class="drag-text">释放鼠标导入数据</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'zhuxian_s4_tracker_v1';
+const DAY_NAMES = ['周日','周一','周二','周三','周四','周五','周六'];
+
+// Default activity definitions (used for first-time init)
+const DEFAULT_ACTIVITIES = [
+  { key: 'fengyun',   name: '风云事件',   max: 10, period: '周', type: 'counter' },
+  { key: 'xiexiao',   name: '邪枭事件',   max: 3,  period: '周', type: 'counter' },
+  { key: 'lingzun',   name: '灵尊试道心', max: 1,  period: '周', type: 'toggle'  },
+  { key: 'baihua',    name: '百花劫煞',   max: 1,  period: '周', type: 'toggle'  },
+  { key: 'boguan',    name: '博观洞天',   max: 1,  period: '周', type: 'toggle'  },
+  { key: 'worldBoss', name: '世界BOSS',   max: 1,  period: '周', type: 'toggle'  },
+  { key: 'yabiao',    name: '押镖',       max: 10, period: '周', type: 'counter' }
+];
+
+// Fixed-time events
+const FIXED_EVENTS = [
+  { name: '世界BOSS',   icon: '🌍', schedule: '周二/周四/周六 18:55~22:00', desc: '每角色每周1次', days: [2,4,6], startH: 18, startM: 55, endH: 22, endM: 0 },
+  { name: '押镖',       icon: '🚂', schedule: '每日 16:00~22:00',           desc: '每周10次（前3次额外奖励）', days: [0,1,2,3,4,5,6], startH: 16, startM: 0, endH: 22, endM: 0 },
+  { name: '鸿钧之战',   icon: '⚔️', schedule: '周六日 13:00~14:00 / 20:00~21:00', desc: '共4场，提前5分钟排队', days: [6,0], startH: 12, startM: 55, endH: 21, endM: 0 },
+  { name: '暮野封妖',   icon: '👻', schedule: '周三 20:00~21:00',           desc: '仅1小时，别错过', days: [3], startH: 20, startM: 0, endH: 21, endM: 0 },
+  { name: '帮会联赛',   icon: '🛡️', schedule: '周五 20:00~22:00',           desc: '帮会活动', days: [5], startH: 20, startM: 0, endH: 22, endM: 0 }
+];
+
+// ===== Data =====
+function newCharacter(name, activities) {
+  const c = { name: name || '角色', silver: 0 };
+  (activities || DEFAULT_ACTIVITIES).forEach(act => {
+    c[act.key] = act.type === 'counter' ? 0 : false;
+  });
+  return c;
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      // Migration: add activities array if not present
+      if (!d.activities) {
+        d.activities = JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES));
+      }
+      // Migration: ensure all character fields exist for current activities
+      if (d.characters) {
+        d.characters.forEach(c => {
+          if (c.silver === undefined) c.silver = 0;
+        });
+        d.activities.forEach(act => {
+          d.characters.forEach(c => {
+            if (c[act.key] === undefined) {
+              c[act.key] = act.type === 'counter' ? 0 : false;
+            }
+          });
+        });
+      }
+      if (!d.silverHistory) d.silverHistory = [];
+      if (!d.settings) d.settings = {};
+      d.settings.resetDay = d.settings.resetDay || '3';
+      return d;
+    }
+  } catch(e) {}
+  // Fresh data
+  const acts = JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES));
+  const d = {
+    characters: [],
+    activities: acts,
+    settings: { resetDay: '3', resetHour: '5' },
+    notes: '',
+    weekStart: new Date().toISOString()
+  };
+  for (let i = 0; i < 12; i++) {
+    d.characters.push(newCharacter('角色' + (i+1), acts));
+  }
+  return d;
+}
+
+let data = loadData();
+let fileHandle = null;
+let fileSaveEnabled = false;
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  if (fileSaveEnabled && fileHandle) autoSaveToFile();
+}
+
+// ===== File System Access API: 绑定本地文件自动存档 =====
+const HANDLE_DB_NAME = 'zhuxian_s4_db';
+const HANDLE_STORE = 'handles';
+const HANDLE_KEY = 'saveFile';
+
+function openHandleDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(HANDLE_DB_NAME, 1);
+    req.onupgradeneeded = (e) => { e.target.result.createObjectStore(HANDLE_STORE); };
+    req.onsuccess = (e) => resolve(e.target.result);
+    req.onerror = (e) => reject(e);
+  });
+}
+async function idbPut(handle) {
+  const db = await openHandleDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(HANDLE_STORE, 'readwrite');
+    tx.objectStore(HANDLE_STORE).put(handle, HANDLE_KEY);
+    tx.oncomplete = resolve; tx.onerror = reject;
+  });
+}
+async function idbGet() {
+  const db = await openHandleDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(HANDLE_STORE, 'readonly');
+    const req = tx.objectStore(HANDLE_STORE).get(HANDLE_KEY);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = reject;
+  });
+}
+async function idbDel() {
+  const db = await openHandleDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(HANDLE_STORE, 'readwrite');
+    tx.objectStore(HANDLE_STORE).delete(HANDLE_KEY);
+    tx.oncomplete = resolve; tx.onerror = reject;
+  });
+}
+
+// 绑定存档文件
+async function bindSaveFile() {
+  if (!window.showSaveFilePicker) {
+    showToast('⚠️ 当前浏览器不支持，请用 Chrome/Edge');
+    return;
+  }
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: 'zhuxian_s4_save.json',
+      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+    });
+    fileHandle = handle;
+    fileSaveEnabled = true;
+    await idbPut(handle);
+    // 立即写入当前数据
+    await autoSaveToFile();
+    updateSaveStatus();
+    showToast(' 已绑定: ' + handle.name + '（自动存档已开启）');
+  } catch(e) {
+    if (e.name !== 'AbortError') showToast('❌ 绑定失败');
+  }
+}
+
+// 解绑存档文件
+async function unbindSaveFile() {
+  fileHandle = null;
+  fileSaveEnabled = false;
+  await idbDel();
+  updateSaveStatus();
+  showToast('已解绑存档文件，数据仍保存在浏览器');
+}
+
+// 写入数据到绑定的文件
+async function autoSaveToFile() {
+  if (!fileHandle) return;
+  try {
+    const writable = await fileHandle.createWritable();
+    await writable.write(JSON.stringify(data, null, 2));
+    await writable.close();
+  } catch(e) {
+    if (e.name === 'NotAllowedError') {
+      fileSaveEnabled = false;
+      updateSaveStatus();
+    }
+  }
+}
+
+// 页面加载时尝试恢复文件绑定
+async function tryRestoreFile() {
+  if (!window.showSaveFilePicker) { updateSaveStatus(); return; }
+  try {
+    const handle = await idbGet();
+    if (!handle) { updateSaveStatus(); return; }
+    const perm = await handle.queryPermission({ mode: 'readwrite' });
+    if (perm === 'granted') {
+      // 权限仍在，直接恢复
+      fileHandle = handle;
+      fileSaveEnabled = true;
+      // 从文件加载数据（文件是 source of truth）
+      const file = await handle.getFile();
+      const text = await file.text();
+      const fileData = JSON.parse(text);
+      if (fileData && fileData.characters) {
+        // 迁移补全
+        if (!fileData.activities) fileData.activities = JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES));
+        fileData.characters.forEach(c => {
+          if (c.silver === undefined) c.silver = 0;
+          fileData.activities.forEach(act => {
+            if (c[act.key] === undefined) c[act.key] = act.type === 'counter' ? 0 : false;
+          });
+        });
+        if (!fileData.silverHistory) fileData.silverHistory = [];
+        if (!fileData.settings) fileData.settings = { resetDay: '3' };
+        data = fileData;
+        saveData();
+        renderAll();
+      }
+      updateSaveStatus();
+      showToast(' 已恢复存档: ' + handle.name);
+    } else {
+      // 需要用户点击授权
+      fileHandle = handle;
+      updateSaveStatus(true); // show restore button
+    }
+  } catch(e) { updateSaveStatus(); }
+}
+
+// 用户点击恢复按钮
+async function restoreFilePermission() {
+  if (!fileHandle) return;
+  try {
+    const req = await fileHandle.requestPermission({ mode: 'readwrite' });
+    if (req === 'granted') {
+      fileSaveEnabled = true;
+      const file = await fileHandle.getFile();
+      const text = await file.text();
+      const fileData = JSON.parse(text);
+      if (fileData && fileData.characters) {
+        if (!fileData.activities) fileData.activities = JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES));
+        fileData.characters.forEach(c => {
+          if (c.silver === undefined) c.silver = 0;
+          fileData.activities.forEach(act => {
+            if (c[act.key] === undefined) c[act.key] = act.type === 'counter' ? 0 : false;
+          });
+        });
+        if (!fileData.silverHistory) fileData.silverHistory = [];
+        if (!fileData.settings) fileData.settings = { resetDay: '3' };
+        data = fileData;
+        saveData();
+        renderAll();
+      }
+      updateSaveStatus();
+      showToast(' 已恢复存档: ' + fileHandle.name);
+    }
+  } catch(e) { showToast('❌ 恢复失败'); }
+}
+
+// 更新存档状态显示
+function updateSaveStatus(needRestore) {
+  const el = document.getElementById('saveStatus');
+  if (!window.showSaveFilePicker) {
+    el.className = 'save-status nosupport';
+    el.innerHTML = '💾 仅浏览器存储';
+    return;
+  }
+  if (fileSaveEnabled && fileHandle) {
+    el.className = 'save-status linked';
+    el.innerHTML = '✅ 自动存档: ' + fileHandle.name + ' <span style="cursor:pointer;text-decoration:underline;margin-left:4px;" onclick="event.stopPropagation();unbindSaveFile()">解绑</span>';
+  } else if (needRestore && fileHandle) {
+    el.className = 'save-status unlinked';
+    el.innerHTML = ' <span style="cursor:pointer;text-decoration:underline;" onclick="restoreFilePermission()">点击恢复存档</span>';
+  } else {
+    el.className = 'save-status unlinked';
+    el.innerHTML = '本地存储';
+  }
+}
+
+// ===== 拖拽导入 =====
+let dragCounter = 0;
+window.addEventListener('dragenter', (e) => {
+  e.preventDefault();
+  if (e.dataTransfer && e.dataTransfer.types.includes('Files')) {
+    dragCounter++;
+    document.getElementById('dragOverlay').classList.add('show');
+  }
+});
+window.addEventListener('dragover', (e) => { e.preventDefault(); });
+window.addEventListener('dragleave', (e) => {
+  e.preventDefault();
+  dragCounter--;
+  if (dragCounter <= 0) {
+    dragCounter = 0;
+    document.getElementById('dragOverlay').classList.remove('show');
+  }
+});
+window.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dragCounter = 0;
+  document.getElementById('dragOverlay').classList.remove('show');
+  const file = e.dataTransfer.files[0];
+  if (!file || !file.name.endsWith('.json')) {
+    showToast('❌ 请拖入 .json 文件');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (!imported.characters) throw new Error('Invalid format');
+      if (!imported.activities) imported.activities = JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES));
+      imported.characters.forEach(c => {
+        if (c.silver === undefined) c.silver = 0;
+        imported.activities.forEach(act => {
+          if (c[act.key] === undefined) c[act.key] = act.type === 'counter' ? 0 : false;
+        });
+      });
+      if (!imported.silverHistory) imported.silverHistory = [];
+      if (!imported.settings) imported.settings = { resetDay: '3' };
+      data = imported;
+      saveData();
+      renderAll();
+      showToast('✅ 拖拽导入成功');
+    } catch(err) {
+      showToast('❌ 导入失败：文件格式错误');
+    }
+  };
+  reader.readAsText(file);
+});
+
+// ===== No daily auto-reset (yabiao is weekly now) =====
+
+// ===== Fixed event checks =====
+function isEventToday(ev) {
+  const day = new Date().getDay();
+  if (ev.multiDay) return day === ev.startDay || day === ev.endDay;
+  return ev.days.includes(day);
+}
+
+function isEventActive(ev) {
+  const now = new Date();
+  const day = now.getDay();
+  const mins = now.getHours() * 60 + now.getMinutes();
+  if (ev.multiDay) {
+    if (day === ev.startDay && mins >= ev.startH * 60 + ev.startM) return true;
+    if (day === ev.endDay && mins <= ev.endH * 60 + ev.endM) return true;
+    return false;
+  }
+  if (!ev.days.includes(day)) return false;
+  return mins >= ev.startH * 60 + ev.startM && mins <= ev.endH * 60 + ev.endM;
+}
+
+function getEventDisplayStatus(ev) {
+  const now = new Date();
+  const today = now.getDay();
+  const mins = now.getHours() * 60 + now.getMinutes();
+  const resetDay = parseInt(data.settings.resetDay || '3');
+  function cyclePos(d) { return (d - resetDay + 7) % 7; }
+  const todayPos = cyclePos(today);
+
+  // 1. Active right now
+  if (isEventActive(ev)) {
+    return { state: 'active', label: '进行中', cls: 'active', sort: 0 };
+  }
+
+  // 2. Event is today (but not active)
+  if (isEventToday(ev)) {
+    if (ev.multiDay) {
+      if (today === ev.startDay && mins < ev.startH * 60 + ev.startM) {
+        return { state: 'upcoming', label: '今日 ' + ev.startH + ':' + String(ev.startM).padStart(2,'0') + ' 开放', cls: 'scheduled', sort: 1 };
+      }
+      return { state: 'ended', label: '今日已结束', cls: 'closed', sort: 2 };
+    }
+    if (mins < ev.startH * 60 + ev.startM) {
+      return { state: 'upcoming', label: '今日 ' + String(ev.startH).padStart(2,'0') + ':' + String(ev.startM).padStart(2,'0') + ' 开放', cls: 'scheduled', sort: 1 };
+    }
+    return { state: 'ended', label: '今日已结束', cls: 'closed', sort: 2 };
+  }
+
+  // 3. Not today — check reset cycle
+  if (ev.multiDay) {
+    if (cyclePos(ev.endDay) < todayPos) {
+      return { state: 'passed', label: '本周已结束', cls: 'closed', sort: 4 };
+    }
+    return { state: 'future', label: DAY_NAMES[ev.startDay] + ' ' + ev.startH + ':' + String(ev.startM).padStart(2,'0') + ' 开放', cls: 'scheduled', sort: 3 };
+  }
+
+  // Single-day: find next occurrence in cycle
+  const upcoming = ev.days.filter(d => cyclePos(d) > todayPos).sort((a,b) => cyclePos(a) - cyclePos(b));
+  if (upcoming.length > 0) {
+    const nextDay = upcoming[0];
+    return { state: 'future', label: DAY_NAMES[nextDay] + ' ' + String(ev.startH).padStart(2,'0') + ':' + String(ev.startM).padStart(2,'0') + ' 开放', cls: 'scheduled', sort: 3 };
+  }
+  return { state: 'passed', label: '本周已结束', cls: 'closed', sort: 4 };
+}
+
+// ===== Render: Header =====
+function renderHeader() {
+  const thead = document.getElementById('tableHeader');
+  thead.innerHTML = '';
+  const tr = document.createElement('tr');
+  let html = '<th>角色</th>';
+  const actColors = { '风云事件':'#3b82f6','邪枭事件':'#f43f5e','灵尊试道心':'#a855f7','百花劫煞':'#ec4899','博观洞天':'#f59e0b','世界BOSS':'#f97316','押镖':'#22c55e','鸿钧之战':'#dc2626','暮野封妖':'#6366f1','帮会联赛':'#06b6d4','璇玑宝库':'#eab308','帮派钓鱼':'#84cc16' };
+  data.activities.forEach(act => {
+    const c = actColors[act.name] || 'var(--text)';
+    html += `<th><span style="color:${c}">${act.name}</span><br><small style="color:var(--text-dim)">${act.max}次/${act.period}</small></th>`;
+  });
+  tr.innerHTML = html;
+  thead.appendChild(tr);
+}
+
+// ===== Render: Table =====
+function renderTable() {
+  const tbody = document.getElementById('charTableBody');
+  tbody.innerHTML = '';
+  data.characters.forEach((char, i) => {
+    const tr = document.createElement('tr');
+    // Name cell with remove button
+    const nameTd = document.createElement('td');
+    nameTd.innerHTML = `<div class="char-cell"><div class="char-name" onclick="editName(${i}, this)">${char.name}</div><button class="btn-remove" onclick="removeCharacter(${i})" title="删除">×</button></div>`;
+    tr.appendChild(nameTd);
+    // Activity cells
+    data.activities.forEach(act => {
+      if (act.type === 'counter') {
+        tr.appendChild(makeCounter(i, act.key, act.max));
+      } else {
+        tr.appendChild(makeToggle(i, act.key));
+      }
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+function makeCounter(idx, key, max) {
+  const td = document.createElement('td');
+  const div = document.createElement('div');
+  div.className = 'counter';
+  const val = data.characters[idx][key];
+  const minus = document.createElement('button');
+  minus.className = 'c-btn'; minus.textContent = '\u2212';
+  minus.onclick = () => adjust(idx, key, -1, max);
+  const vSpan = document.createElement('span');
+  vSpan.className = 'c-val ' + statusClass(val, max);
+  vSpan.textContent = val;
+  vSpan.id = `c${idx}-${key}`;
+  const mSpan = document.createElement('span');
+  mSpan.className = 'c-max'; mSpan.textContent = '/' + max;
+  const plus = document.createElement('button');
+  plus.className = 'c-btn'; plus.textContent = '+';
+  plus.onclick = () => adjust(idx, key, 1, max);
+  div.append(minus, vSpan, mSpan, plus);
+  td.appendChild(div);
+  return td;
+}
+
+function makeToggle(idx, key) {
+  const td = document.createElement('td');
+  const btn = document.createElement('button');
+  const done = data.characters[idx][key];
+  btn.className = 'toggle' + (done ? ' done' : '');
+  btn.textContent = done ? '\u2713 完成' : '未完成';
+  btn.id = `c${idx}-${key}`;
+  btn.onclick = () => toggle(idx, key);
+  td.appendChild(btn);
+  return td;
+}
+
+function statusClass(val, max) {
+  if (val <= 0) return 'c-zero';
+  if (val >= max) return 'c-done';
+  return 'c-partial';
+}
+
+function adjust(idx, key, delta, max) {
+  let v = data.characters[idx][key] + delta;
+  v = Math.max(0, Math.min(max, v));
+  data.characters[idx][key] = v;
+  saveData();
+  const el = document.getElementById(`c${idx}-${key}`);
+  el.textContent = v;
+  el.className = 'c-val ' + statusClass(v, max);
+  updateSummary();
+}
+
+function toggle(idx, key) {
+  const done = !data.characters[idx][key];
+  data.characters[idx][key] = done;
+  saveData();
+  const btn = document.getElementById(`c${idx}-${key}`);
+  btn.className = 'toggle' + (done ? ' done' : '');
+  btn.textContent = done ? '\u2713 完成' : '未完成';
+  updateSummary();
+}
+
+function editName(idx, div) {
+  const old = data.characters[idx].name;
+  const input = document.createElement('input');
+  input.type = 'text'; input.value = old;
+  div.innerHTML = ''; div.appendChild(input);
+  input.focus(); input.select();
+  input.onblur = () => {
+    const n = input.value.trim() || old;
+    data.characters[idx].name = n;
+    saveData(); div.textContent = n;
+  };
+  input.onkeydown = e => {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') div.textContent = old;
+  };
+}
+
+// ===== Character management =====
+function addCharacter() {
+  const idx = data.characters.length + 1;
+  data.characters.push(newCharacter('角色' + idx, data.activities));
+  saveData(); renderTable(); updateSummary(); renderSilverTable();
+  showToast('已添加角色' + idx);
+}
+
+function removeCharacter(idx) {
+  if (data.characters.length <= 1) { showToast('至少保留1个角色'); return; }
+  customConfirm('确定删除"' + data.characters[idx].name + '"？', function() {
+    data.characters.splice(idx, 1);
+    saveData(); renderTable(); updateSummary(); renderSilverTable();
+    showToast('已删除角色');
+  });
+}
+
+// ===== Activity management =====
+function addActivity() {
+  const name = document.getElementById('newActName').value.trim();
+  if (!name) { showToast('请输入活动名称'); return; }
+  const type = document.getElementById('newActType').value;
+  const max = parseInt(document.getElementById('newActMax').value) || 1;
+  const period = document.getElementById('newActPeriod').value;
+  const key = 'act_' + Date.now();
+  data.activities.push({ key, name, max, period, type });
+  data.characters.forEach(c => { c[key] = type === 'counter' ? 0 : false; });
+  saveData();
+  renderHeader(); renderTable(); updateSummary(); renderBatchOps(); renderActList();
+  document.getElementById('newActName').value = '';
+  showToast('已添加: ' + name);
+}
+
+function removeActivity(idx) {
+  const act = data.activities[idx];
+  customConfirm('确定删除"' + act.name + '"？该活动的所有进度将丢失。', function() {
+    data.characters.forEach(c => { delete c[act.key]; });
+    data.activities.splice(idx, 1);
+    saveData();
+    renderHeader(); renderTable(); updateSummary(); renderBatchOps(); renderActList();
+    showToast('已删除: ' + act.name);
+  });
+}
+
+function renderActList() {
+  const container = document.getElementById('actList');
+  container.innerHTML = '';
+  data.activities.forEach((act, i) => {
+    const tag = document.createElement('div');
+    tag.className = 'act-tag';
+    const typeLabel = act.type === 'counter' ? act.max + '次/' + act.period : '开关/' + act.period;
+    tag.innerHTML = '<span>' + act.name + ' (' + typeLabel + ')</span><button class="act-tag-del" onclick="removeActivity(' + i + ')" title="删除">\u00d7</button>';
+    container.appendChild(tag);
+  });
+}
+
+// ===== Silver tracking =====
+function formatNum(n) {
+  if (!n || n === 0) return '0';
+  return n.toLocaleString('zh-CN');
+}
+
+function renderSilverTable() {
+  const body = document.getElementById('silverTableBody');
+  const foot = document.getElementById('silverTableFoot');
+  const summary = document.getElementById('silverSummary');
+  body.innerHTML = '';
+  foot.innerHTML = '';
+
+  const hist = data.silverHistory || [];
+  const lastWeek = hist.length > 0 ? hist[hist.length - 1] : null;
+
+  let thisTotal = 0;
+  let lastTotal = lastWeek ? lastWeek.total : 0;
+
+  data.characters.forEach((char, i) => {
+    const silver = char.silver || 0;
+    thisTotal += silver;
+    const lastSilver = lastWeek ? (lastWeek.values[i] || 0) : 0;
+    const delta = silver - lastSilver;
+    let dCls = 'flat', dText = '\u2014';
+    if (delta > 0) { dCls = 'up'; dText = '+' + formatNum(delta); }
+    else if (delta < 0) { dCls = 'down'; dText = formatNum(delta); }
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + char.name + '</td>' +
+      '<td><input type="number" class="silver-input" value="' + silver + '" onchange="updateSilver(' + i + ', this.value)" placeholder="0"></td>' +
+      '<td style="color:var(--text-dim)">' + (lastSilver > 0 ? formatNum(lastSilver) : '\u2014') + '</td>' +
+      '<td class="silver-delta ' + dCls + '">' + dText + '</td>';
+    body.appendChild(tr);
+  });
+
+  // Total row
+  const totalDelta = thisTotal - lastTotal;
+  let tdCls = 'flat', tdText = '\u2014';
+  if (totalDelta > 0) { tdCls = 'up'; tdText = '+' + formatNum(totalDelta); }
+  else if (totalDelta < 0) { tdCls = 'down'; tdText = formatNum(totalDelta); }
+  const ftr = document.createElement('tr');
+  ftr.className = 'silver-total-row';
+  ftr.innerHTML = '<td>合计</td><td>' + formatNum(thisTotal) + '</td><td>' + (lastTotal > 0 ? formatNum(lastTotal) : '\u2014') + '</td><td class="silver-delta ' + tdCls + '">' + tdText + '</td>';
+  foot.appendChild(ftr);
+
+  // Summary cards
+  const avgChar = data.characters.length > 0 ? Math.round(thisTotal / data.characters.length) : 0;
+  summary.innerHTML =
+    '<div class="silver-stat"><span class="silver-stat-label">本周总收入</span><span class="silver-stat-val" style="color:var(--gold)">' + formatNum(thisTotal) + '</span></div>' +
+    '<div class="silver-stat"><span class="silver-stat-label">上周总收入</span><span class="silver-stat-val" style="color:var(--text-dim)">' + (lastTotal > 0 ? formatNum(lastTotal) : '\u2014') + '</span></div>' +
+    '<div class="silver-stat"><span class="silver-stat-label">周环比变化</span><span class="silver-stat-val ' + tdCls + '" style="color:' + (totalDelta > 0 ? 'var(--green)' : totalDelta < 0 ? 'var(--red)' : 'var(--text-dim)') + '">' + tdText + '</span></div>' +
+    '<div class="silver-stat"><span class="silver-stat-label">角色均收</span><span class="silver-stat-val" style="color:var(--blue)">' + formatNum(avgChar) + '</span></div>';
+}
+
+function updateSilver(idx, val) {
+  data.characters[idx].silver = parseInt(val) || 0;
+  saveData();
+  renderSilverTable();
+}
+
+// ===== Batch =====
+function batchAdd(key, delta, max) {
+  data.characters.forEach(c => {
+    let v = c[key] + delta;
+    c[key] = Math.max(0, Math.min(max, v));
+  });
+  saveData(); renderTable(); updateSummary();
+  showToast('批量操作完成');
+}
+
+function batchToggle(key, val) {
+  data.characters.forEach(c => c[key] = val);
+  saveData(); renderTable(); updateSummary();
+  showToast('批量操作完成');
+}
+
+function renderBatchOps() {
+  const container = document.getElementById('batchOps');
+  container.innerHTML = '';
+  data.activities.forEach(act => {
+    const item = document.createElement('div');
+    item.className = 'batch-item';
+    if (act.type === 'counter') {
+      item.innerHTML = `<span>${act.name}:</span><button class="btn" onclick="batchAdd('${act.key}',1,${act.max})">全部+1</button><button class="btn btn-danger" onclick="batchAdd('${act.key}',-${act.max},${act.max})">清零</button>`;
+    } else {
+      item.innerHTML = `<span>${act.name}:</span><button class="btn" onclick="batchToggle('${act.key}',true)">全部完成</button><button class="btn btn-danger" onclick="batchToggle('${act.key}',false)">清除</button>`;
+    }
+    container.appendChild(item);
+  });
+}
+
+// ===== Summary =====
+function updateSummary() {
+  const grid = document.getElementById('summaryGrid');
+  grid.innerHTML = '';
+  const cc = data.characters.length;
+  let grandTotal = 0, grandMax = 0;
+  const totals = {};
+  data.activities.forEach(act => {
+    let total = 0;
+    const maxTotal = act.max * cc;
+    if (act.type === 'toggle') {
+      total = data.characters.filter(c => c[act.key]).length;
+    } else {
+      total = data.characters.reduce((s, c) => s + c[act.key], 0);
+    }
+    totals[act.key] = { total, maxTotal };
+    grandTotal += total; grandMax += maxTotal;
+    const pct = maxTotal > 0 ? Math.round(total / maxTotal * 100) : 0;
+    const color = pct >= 100 ? 'var(--green)' : pct <= 0 ? 'var(--red)' : 'var(--yellow)';
+    const card = document.createElement('div');
+    card.className = 'summary-card';
+    card.innerHTML = `<div class="s-label">${act.name} (${act.max}次/${act.period})</div><div class="s-value" style="color:${color}">${total}/${maxTotal}</div><div class="s-bar"><div class="s-bar-fill" style="width:${pct}%;background:${color}"></div></div>`;
+    grid.appendChild(card);
+  });
+  // Footer totals
+  const tfoot = document.getElementById('tableFooter');
+  tfoot.innerHTML = '';
+  const tr = document.createElement('tr');
+  tr.style.background = '#1E1E1E';
+  tr.style.fontWeight = 'bold';
+  tr.innerHTML = '<td>合计</td>';
+  data.activities.forEach(act => {
+    const t = totals[act.key];
+    const td = document.createElement('td');
+    td.textContent = t.total + '/' + t.maxTotal;
+    tr.appendChild(td);
+  });
+  tfoot.appendChild(tr);
+  // Overall
+  const overallPct = grandMax > 0 ? Math.round(grandTotal / grandMax * 100) : 0;
+  document.getElementById('overallPct').textContent = overallPct + '%';
+  document.getElementById('overallFill').style.width = overallPct + '%';
+}
+
+// ===== Fixed events grid =====
+function renderEventsGrid() {
+  const grid = document.getElementById('eventsGrid');
+  grid.innerHTML = '';
+  const iconMap = { active: '', upcoming: '', ended: '', future: '', passed: '' };
+  const evColorMap = { '风云事件':'fengyun','邪枭事件':'xiexiao','灵尊试道心':'lingzun','百花劫煞':'baihua','博观洞天':'boguan','世界BOSS':'boss','押镖':'yabiao','鸿钧之战':'hongjun','暮野封妖':'muye','帮会联赛':'banghui','璇玑宝库':'xuanji','帮派钓鱼':'diaoyu' };
+
+  // Build + sort by status priority
+  const items = FIXED_EVENTS.map(ev => ({ ev, s: getEventDisplayStatus(ev) }));
+  items.sort((a, b) => a.s.sort - b.s.sort);
+
+  items.forEach(({ ev, s }) => {
+    const card = document.createElement('div');
+    let cls = 'event-card ev-' + (evColorMap[ev.name] || '');
+    if (s.state === 'active') cls += ' active';
+    else if (s.state === 'passed') cls += ' passed';
+    card.className = cls;
+    card.innerHTML = `<div class="ev-icon">${ev.icon}</div><div><div class="ev-name">${ev.name}</div><div class="ev-time">${ev.schedule}</div><div class="ev-desc">${ev.desc}</div><span class="ev-badge ${s.cls}">${s.label}</span></div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ===== Reset =====
+function resetWeekly() {
+  customConfirm('确定重置所有周常活动进度？\n银两数据将归档为上周记录。', function() {
+    // Archive silver data before reset
+    if (!data.silverHistory) data.silverHistory = [];
+    const silverValues = data.characters.map(c => c.silver || 0);
+    const silverTotal = silverValues.reduce((s, v) => s + v, 0);
+    data.silverHistory.push({
+      weekStart: data.weekStart || new Date().toISOString(),
+      values: silverValues,
+      total: silverTotal
+    });
+    if (data.silverHistory.length > 8) data.silverHistory.shift();
+
+    // Reset activities + silver
+    data.characters.forEach(c => {
+      c.silver = 0;
+      data.activities.forEach(act => {
+        if (act.period === '周') {
+          c[act.key] = act.type === 'counter' ? 0 : false;
+        }
+      });
+    });
+    data.weekStart = new Date().toISOString();
+    saveData(); renderTable(); updateSummary(); updateWeekInfo(); renderSilverTable();
+    showToast('✅ 周常已重置，银两已归档');
+  });
+}
+
+// ===== Settings =====
+function loadSettings() {}
+
+// ===== Notes =====
+function saveNotes() { data.notes = document.getElementById('earningsNotes').value; saveData(); }
+
+// ===== Week info =====
+function updateWeekInfo() {
+  const now = new Date();
+  const resetDay = parseInt(data.settings.resetDay || '3'); // 3=周三
+  const resetHour = parseInt(data.settings.resetHour || '5');
+  const curDay = now.getDay();
+  const curHour = now.getHours();
+
+  // 基于周三重置周期计算"本周第几天"（周三=第1天，周二=第7天）
+  let daysSinceReset = (curDay - resetDay + 7) % 7;
+  if (curDay === resetDay && curHour < resetHour) daysSinceReset = 7; // 周三重置点前还算上周
+  const cycleDay = daysSinceReset + 1;
+
+  // 显示周几
+  const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
+  document.getElementById('weekInfo').textContent = '本周第' + cycleDay + '天 · 周' + dayNames[curDay];
+
+  // 距下次周重置倒计时
+  const next = new Date(now);
+  let daysUntil = (resetDay - curDay + 7) % 7;
+  if (daysUntil === 0 && curHour >= resetHour) daysUntil = 7;
+  next.setDate(now.getDate() + daysUntil);
+  next.setHours(resetHour, 0, 0, 0);
+  const ms = next - now;
+  const d = Math.floor(ms / 86400000);
+  const h = Math.floor((ms % 86400000) / 3600000);
+  document.getElementById('resetCountdown').textContent = '距周重置: ' + d + '天' + h + '小时';
+}
+
+// ===== Export / Import =====
+function exportData() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'zhuxian_s4_backup_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('📤 已导出备份文件');
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.characters) throw new Error('Invalid format');
+      if (!imported.activities) {
+        imported.activities = JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES));
+      }
+      // Ensure all character fields exist
+      imported.characters.forEach(c => {
+        if (c.silver === undefined) c.silver = 0;
+        imported.activities.forEach(act => {
+          if (c[act.key] === undefined) {
+            c[act.key] = act.type === 'counter' ? 0 : false;
+          }
+        });
+      });
+      if (!imported.silverHistory) imported.silverHistory = [];
+      if (!imported.settings) imported.settings = { resetDay: '3' };
+      data = imported;
+      saveData();
+      renderAll();
+      showToast('✅ 数据已导入');
+    } catch(err) {
+      showToast('❌ 导入失败：文件格式错误');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// ===== Toast =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ===== Custom Confirm Modal =====
+let _confirmCb = null;
+function customConfirm(msg, cb) {
+  document.getElementById('confirmMsg').textContent = msg;
+  document.getElementById('confirmModal').style.display = 'flex';
+  _confirmCb = cb;
+}
+function closeConfirm(ok) {
+  document.getElementById('confirmModal').style.display = 'none';
+  if (ok && _confirmCb) _confirmCb();
+  _confirmCb = null;
+}
+
+// ===== Collapsible =====
+function toggleCollapse(el) {
+  el.classList.toggle('collapsed');
+  el.nextElementSibling.classList.toggle('collapsed');
+}
+
+// ===== Render all =====
+function renderAll() {
+  loadSettings();
+  renderHeader();
+  renderTable();
+  updateSummary();
+  renderBatchOps();
+  renderSilverTable();
+  renderActList();
+  renderEventsGrid();
+  updateWeekInfo();
+  document.getElementById('earningsNotes').value = data.notes || '';
+}
+
+// ===== Init =====
+renderAll();
+tryRestoreFile(); // 异步尝试恢复文件绑定
+setInterval(() => { updateWeekInfo(); renderEventsGrid(); }, 60000);
+</script>
+<script>lucide.createIcons()</script>
+</body>
+</html>

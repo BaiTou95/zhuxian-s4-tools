@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>连招配置</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#09090b;--card:#121215;--card2:#18181c;--border:#252529;--text:#e4e4e7;--muted:#71717a;--dim:#52525b;--gold:#c9a84c;--green:#22c55e;--red:#ef4444;--radius:10px;--radius-sm:6px;--font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding:28px 20px;line-height:1.6}
+.container{max-width:1100px;margin:0 auto}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+h1{font-size:22px;font-weight:700;display:flex;align-items:center;gap:10px}
+h1::before{content:'';width:6px;height:26px;background:var(--gold);border-radius:3px}
+.back-link{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;text-decoration:none;transition:all .15s}
+.back-link:hover{border-color:var(--gold);color:var(--gold)}
+
+.section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:24px}
+.section-card h2{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.section-card h2::before{content:'';width:3px;height:16px;background:var(--gold);border-radius:2px}
+
+.ctrl-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ctrl-row label{font-size:13px;color:var(--muted)}
+.ctrl-row select{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:var(--radius-sm);font-size:13px;font-family:var(--font)}
+.ctrl-row select:focus{outline:none;border-color:var(--gold)}
+
+.btn{padding:9px 18px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:13px;transition:all .15s;font-family:var(--font)}
+.btn:hover{border-color:var(--gold);background:var(--card2)}
+.btn-gold{border-color:rgba(201,168,76,.4);color:var(--gold)}.btn-gold:hover{background:rgba(201,168,76,.08)}
+.btn-danger{border-color:rgba(239,68,68,.4);color:var(--red)}.btn-danger:hover{background:rgba(239,68,68,.08)}
+.btn-sm{padding:5px 12px;font-size:12px}
+
+/* Pool */
+.pool-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.skill-chip{display:inline-flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 14px;font-size:13px;cursor:pointer;position:relative}
+.skill-chip:hover{border-color:var(--gold)}
+.skill-chip .chi{width:40px;height:40px;border-radius:6px;border:1px dashed var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--dim);overflow:hidden;background-size:cover;background-position:center;flex-shrink:0}
+.skill-chip .chname{font-weight:600}
+.skill-chip .chip-del{position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:9px;border:none;background:var(--card);color:var(--red);cursor:pointer;font-size:10px;display:none;align-items:center;justify-content:center;z-index:1}
+.skill-chip:hover .chip-del{display:flex}
+.add-row{display:flex;gap:8px;align-items:center}
+.add-row input{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:var(--radius-sm);font-size:12px;font-family:var(--font);width:120px}
+.add-row input:focus{outline:none;border-color:var(--gold)}
+
+/* Sequence - arrow flow */
+.seq-box{min-height:120px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card2);padding:20px}
+.seq-box.ttl{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.seq-box.ttl span{color:var(--gold);margin-left:4px}
+.seq-flow{display:flex;align-items:flex-start;gap:0;flex-wrap:wrap;padding:4px 0}
+.seq-empty{color:var(--dim);font-size:13px;text-align:center;padding:40px;width:100%}
+
+.seq-step{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;width:90px;flex-shrink:0}
+.seq-step-num{font-size:11px;color:var(--dim);font-weight:700;height:16px}
+.seq-step-icon{width:48px;height:48px;border-radius:8px;overflow:hidden;background:var(--card);border:2px solid var(--border);display:flex;align-items:center;justify-content:center}
+.seq-step-icon img{width:100%;height:100%;object-fit:cover}
+.seq-step-icon .no-img{font-size:16px;color:var(--dim)}
+.seq-step-name{font-size:13px;font-weight:700;text-align:center;line-height:1.2;min-height:32px;display:flex;align-items:center}
+.seq-step-del{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:9px;border:none;background:var(--card);color:var(--red);cursor:pointer;font-size:10px;display:none;align-items:center;justify-content:center;z-index:1}
+.seq-step:hover .seq-step-del{display:flex}
+
+.seq-arrow{display:flex;align-items:center;color:var(--dim);font-size:20px;flex-shrink:0;padding:8px 6px;align-self:center;margin-bottom:20px}
+.combo-notes{width:100%;margin-top:16px}
+.combo-notes textarea{width:100%;min-height:60px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);resize:vertical;line-height:1.6}
+.combo-notes textarea:focus{outline:none;border-color:var(--gold)}
+.combo-actions{margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:999}
+.modal-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;max-width:360px;width:90%;text-align:center}
+.modal-box p{font-size:14px;margin-bottom:16px}
+.modal-box input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--radius-sm);font-size:14px;font-family:var(--font);margin-bottom:16px}
+.modal-box input:focus{outline:none;border-color:var(--gold)}
+.modal-btns{display:flex;gap:10px;justify-content:center}
+
+input[type=text]{font-family:var(--font)}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <h1>连招配置</h1>
+  <a href="zhuxian-s4-tracker.html" class="back-link">返回搬砖看板</a>
+</header>
+
+<div class="section-card">
+  <h2>流派 & 方案</h2>
+  <div class="ctrl-row">
+    <label>门派</label><select id="factionSel" onchange="onFactionChange()"></select>
+    <label>流派</label><select id="specSel" onchange="onSpecChange()"></select>
+    <label>方案</label><select id="schemeSel" onchange="onSchemeChange()"></select>
+    <button class="btn btn-gold btn-sm" onclick="newScheme()">+ 方案</button>
+    <button class="btn btn-sm" onclick="renameScheme()">改名</button>
+    <button class="btn btn-danger btn-sm" onclick="deleteScheme()">删除</button>
+  </div>
+</div>
+
+<div class="section-card">
+  <h2>技能池</h2>
+  <div class="pool-wrap" id="poolWrap"></div>
+  <div class="add-row">
+    <input type="text" id="newSkillInput" placeholder="自定义技能" maxlength="8">
+    <button class="btn btn-sm" onclick="addSkill()">添加</button>
+  </div>
+</div>
+
+<div class="section-card">
+  <h2>连招序列</h2>
+  <div class="seq-box" id="seqBox">
+    <div class="seq-flow" id="seqFlow"></div>
+  </div>
+  <div class="combo-actions">
+    <button class="btn btn-sm btn-gold" onclick="shareCombo()">分享</button>
+  </div>
+  <div class="combo-notes">
+    <textarea id="comboNotes" placeholder="连招说明（如：起手攒资源，爆发注意观察层数，循环期保持buff）" oninput="saveComboNotes()"></textarea>
+  </div>
+</div>
+</div>
+
+<input type="file" id="uploadImg" accept="image/*" style="display:none">
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <p id="modalTitle"></p>
+    <input type="text" id="modalInput">
+    <div class="modal-btns"><button class="btn" onclick="closeModal(false)">取消</button><button class="btn btn-gold" onclick="closeModal(true)">确定</button></div>
+  </div>
+</div>
+
+<script>
+const DB_KEY='zhuxian_combo_v3', IMG_KEY='zhuxian_combo_imgs';
+
+const DEFAULTS={
+  qingyun:{name:'青云',specs:{lei:{name:'雷青云',skills:{zongjian:{name:'纵剑诀'},xiantian:{name:'先天一气剑阵'},nujian:{name:'怒剑劫'},taiji:{name:'太极玄天剑'},yinlei:{name:'引雷诀'},zhenting:{name:'真霆雷动'},shenjian:{name:'神剑御雷真诀'},leiyuan:{name:'雷元爆发'},yulei:{name:'驭雷术'}}},jian:{name:'剑青云',skills:{yujian:{name:'御剑诀'},guanghong:{name:'贯虹'},chuangxing:{name:'穿星'},daojian:{name:'道剑纵横'},qingshuang:{name:'青霜剑华'},jianfuyun:{name:'剑拂云'},jianxin:{name:'剑心通明'},jiuxiao:{name:'九霄剑意'}}}}},
+  fenxiang:{name:'焚香',specs:{yan:{name:'炎焚香',skills:{fenhui:{name:'焚秽'},yuhuojue:{name:'驭火诀'},hongyan:{name:'轰焱'},nanwu:{name:'南巫天火'},yanlong:{name:'炎龙印刻'},yiqifengfa:{name:'意气风发'},liuhuo:{name:'流火连天'},wulong:{name:'五龙御焰'},wanyan:{name:'万炎归宗'}}},zhou:{name:'咒焚香',skills:{jushuo:{name:'聚烁'},lingyin:{name:'灵引'},jijian:{name:'祭剑凝元'},lvling:{name:'律令焚邪'},bahuang:{name:'八荒火龙'},fenhui_z:{name:'焚秽'},linghuo:{name:'灵火炙魂'}}}}},
+  hehuan:{name:'合欢',specs:{yue:{name:'月合欢',skills:{banyue:{name:'半月斩'},jueqing:{name:'绝情'},yueren:{name:'月刃之息'},yueren2:{name:'月刃'},fuyao:{name:'扶摇'},shunshang:{name:'瞬殇'},yingwuzong:{name:'影无踪'},fengqie:{name:'风切'},fenghua:{name:'风花雪月'},fuguang:{name:'浮光'},yuexi:{name:'月袭'},yuewuqing:{name:'月无情'},qifu:{name:'祈福'},piaomiao:{name:'缥缈'},jili:{name:'激励'}}},ying:{name:'影合欢',skills:{banyue_y:{name:'半月斩'},jueqing_y:{name:'绝情'},yueren_y:{name:'月刃之息'},fuxiu:{name:'拂袖千星'},poyue:{name:'破月'},yingwuzong_y:{name:'影无踪'},yingxiangsheng:{name:'影相生'},duanyue:{name:'断月'},yixing:{name:'移形换影'},yuesui:{name:'月碎'},xiaohun:{name:'销魂'},yinghuihuan:{name:'影回还'},yanluo:{name:'烟罗'}}}}},
+  guiwang:{name:'鬼王',specs:{gang:{name:'罡鬼王',skills:{gangfeng:{name:'罡风明王斩'},guixiao:{name:'鬼啸'},juling:{name:'聚灵斩'},guiyue:{name:'鬼跃'},posha:{name:'破煞'},jiying:{name:'疾影'},xiaoren:{name:'啸刃'},mingwangyx:{name:'明王饮血'},qiankun:{name:'乾坤一刃'},modun:{name:'魔盾固守'}}},sha:{name:'煞鬼王',skills:{guanxing:{name:'贯星刺'},guizhan:{name:'鬼斩'},feixue:{name:'沸血咒'},tianmo:{name:'天魔咒血'},jiuyou:{name:'九幽血影斩'},guizhandm:{name:'鬼斩夺命'},mingwangjs:{name:'明王降世咒'},moxing:{name:'魔性大发'},dieren:{name:'叠刃'},guizhanyiqi:{name:'鬼斩一气'},tiansha:{name:'天煞血诀'}}}}},
+  lingxi:{name:'灵汐',specs:{ling:{name:'灵灵汐',skills:{feiliu:{name:'飞流'},ganlin:{name:'甘霖'},suiyu:{name:'碎雨'},jinliyao:{name:'锦鲤谣'},feiyao:{name:'飞鳐笑'},lingbao:{name:'灵爆'},fusu:{name:'复苏'},canglang:{name:'沧浪之潮'},shengsheng:{name:'生生不息'},lingtun:{name:'灵豚咏'},jituan:{name:'激湍'},xuanshui:{name:'玄水御灵'},chaoge:{name:'潮歌'},huanmeng:{name:'幻梦气泡'},hongjing:{name:'泓镜'}}},xi:{name:'汐灵汐',skills:{liushui:{name:'流水'},lingtunyou:{name:'灵豚佑'},lingquan:{name:'灵泉'},shangshan:{name:'上善之水'},lingyu:{name:'灵愈'},ganlin_x:{name:'甘霖'},jinliyao_x:{name:'锦鲤谣'}}}}}
+};
+
+let DB=null,skillImgs={},curFaction='qingyun',curSpec='lei',curSchemeId=null;
+
+function initDB(){const r=localStorage.getItem(DB_KEY);try{DB=r?JSON.parse(r):null;if(!DB||!DB.guiwang||!DB.guiwang.specs.gang){DB=JSON.parse(JSON.stringify(DEFAULTS));}}catch(e){DB=JSON.parse(JSON.stringify(DEFAULTS));}}
+function saveDB(){localStorage.setItem(DB_KEY,JSON.stringify(DB));}
+function specData(){return DB[curFaction].specs[curSpec];}
+function schemes(){const sp=specData();if(!sp.schemes)sp.schemes=[];return sp.schemes;}
+function curScheme(){return schemes().find(s=>s.id===curSchemeId)||null;}
+function loadImgs(){try{const r=localStorage.getItem(IMG_KEY);if(r)skillImgs=JSON.parse(r);}catch(e){}}
+function saveImgs(){localStorage.setItem(IMG_KEY,JSON.stringify(skillImgs));}
+function imgKey(sid){return curFaction+':'+curSpec+':'+sid;}
+function getImg(sid){return skillImgs[imgKey(sid)]||null;}
+
+function renderSelectors(){
+  const fs=document.getElementById('factionSel');fs.innerHTML='';
+  Object.entries(DEFAULTS).forEach(([k,v])=>fs.add(new Option(v.name,k)));
+  fs.value=curFaction;renderSpecSel();
+}
+function renderSpecSel(){
+  const ss=document.getElementById('specSel');ss.innerHTML='';
+  Object.entries(DEFAULTS[curFaction].specs).forEach(([k,v])=>ss.add(new Option(v.name,k)));
+  ss.value=curSpec;renderSchemeSel();
+}
+function renderSchemeSel(){
+  const ss=document.getElementById('schemeSel'),list=schemes();
+  ss.innerHTML='';
+  if(!list.length){ss.add(new Option('暂无方案',''));curSchemeId=null;return;}
+  list.forEach(s=>ss.add(new Option(s.name,s.id)));
+  if(curSchemeId&&list.find(s=>s.id===curSchemeId))ss.value=curSchemeId;
+  else{curSchemeId=list[0].id;ss.value=curSchemeId;}
+}
+
+function renderPool(){
+  const el=document.getElementById('poolWrap'),sp=specData(),skills=sp.skills||{};
+  el.innerHTML='';
+  if(!Object.keys(skills).length){el.innerHTML='<div style="color:var(--dim);font-size:12px;padding:10px">该流派暂无技能，输入名称添加</div>';return;}
+  Object.entries(skills).forEach(([id,s])=>{
+    const chip=document.createElement('div');chip.className='skill-chip';
+    const img=getImg(id);
+    chip.innerHTML=`<div class="chi" style="${img?'background-image:url('+img+')':''}" onclick="uploadIcon('${id}')">${img?'':'+'}</div><span class="chname">${s.name||id}</span><button class="chip-del" onclick="event.stopPropagation();removeSkill('${id}')" title="删除">×</button>`;
+    chip.addEventListener('click',e=>{if(!e.target.classList.contains('chi')&&!e.target.classList.contains('chip-del'))skillToSeq(id);});
+    el.appendChild(chip);
+  });
+}
+
+function renderSeq(){
+  const el=document.getElementById('seqFlow'),sch=curScheme();
+  el.innerHTML='';
+  if(!sch||!sch.sequence||!sch.sequence.length){
+    el.innerHTML='<div class="seq-empty">点击技能或拖拽到这里</div>';
+  }else{
+    const sp=specData(),skills=sp.skills||{};
+    let skillIdx=0;
+    sch.sequence.forEach((item,i)=>{
+      // Arrow before (except first)
+      if(skillIdx>0){
+        const arrow=document.createElement('div');arrow.className='seq-arrow';arrow.textContent='→';el.appendChild(arrow);
+      }
+      skillIdx++;
+      const skill=skills[item.skillId],name=skill?skill.name:'?';
+      const img=getImg(item.skillId);
+      const step=document.createElement('div');step.className='seq-step';step.draggable=true;
+      step.innerHTML=`<span class="seq-step-del" onclick="removeSeqItem(${i})" title="移除">×</span>
+        <span class="seq-step-num">${skillIdx}</span>
+        <div class="seq-step-icon">${img?'<img src="'+img+'" alt="">':'<span class="no-img">SK</span>'}</div>
+        <span class="seq-step-name">${name}</span>`;
+      step.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain','seq:'+i);});
+      step.addEventListener('dragover',e=>{e.preventDefault();});
+      step.addEventListener('drop',e=>{
+        e.preventDefault();const raw=e.dataTransfer.getData('text/plain');
+        if(raw.startsWith('seq:')){const from=parseInt(raw.slice(4));if(from!==i){const[m]=sch.sequence.splice(from,1);sch.sequence.splice(i,0,m);saveDB();renderSeq();}}
+      });
+      el.appendChild(step);
+    });
+  }
+  // Load combo notes
+  document.getElementById('comboNotes').value=sch?sch.notes||'':'';
+}
+
+function skillToSeq(sid){
+  let sch=curScheme();if(!sch){newSchemeSilent();sch=curScheme();}if(!sch)return;
+  if(!sch.sequence)sch.sequence=[];
+  sch.sequence.push({skillId:sid,note:''});saveDB();renderSeq();
+}
+function removeSeqItem(i){const sch=curScheme();if(!sch||!sch.sequence)return;sch.sequence.splice(i,1);saveDB();renderSeq();}
+function renameSkill(id,name){const sp=specData();if(sp.skills[id]){sp.skills[id].name=name;saveDB();renderPool();renderSeq();}}
+function removeSkill(id){const sp=specData();delete sp.skills[id];schemes().forEach(s=>{if(s.sequence)s.sequence=s.sequence.filter(x=>x.skillId!==id);});saveDB();renderPool();renderSeq();}
+function shareCombo(){
+  const sch=curScheme();if(!sch||!sch.sequence||!sch.sequence.length){alert('没有连招数据');return;}
+  const sp=specData(),skills=sp.skills||{};
+  const faction=DEFAULTS[curFaction].name,specName=sp.name||'';
+  const filtered=sch.sequence.filter(x=>x.skillId);
+  const total=filtered.length;
+
+  // Preload icons
+  const iconImgs={},iconsToLoad=[];
+  filtered.forEach(item=>{
+    const img=getImg(item.skillId);
+    if(img&&!iconImgs[item.skillId]){const im=new Image();im.src=img;iconImgs[item.skillId]=im;iconsToLoad.push(im);}
+  });
+  // Wait for images then draw
+  const doDraw=()=>{
+    const w=420,h=Math.max(400,160+total*58+(sch.notes?80:0));
+    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#09090b';ctx.fillRect(0,0,w,h);
+    ctx.fillStyle='#c9a84c';ctx.font='bold 13px sans-serif';ctx.fillText(faction+' · '+specName,24,40);
+    ctx.fillStyle='#e4e4e7';ctx.font='bold 20px sans-serif';ctx.fillText(sch.name,24,68);
+    let y=110,num=0;
+    filtered.forEach(item=>{
+      num++;const s=skills[item.skillId];
+      ctx.fillStyle='#c9a84c';ctx.font='bold 14px sans-serif';ctx.fillText(num+'.',24,y+28);
+      const icon=iconImgs[item.skillId];
+      if(icon&&icon.complete&&icon.naturalWidth>0){ctx.drawImage(icon,48,y,42,42);}
+      else{ctx.fillStyle='#121215';ctx.fillRect(48,y,42,42);ctx.strokeStyle='#252529';ctx.lineWidth=2;ctx.strokeRect(48,y,42,42);}
+      ctx.fillStyle='#e4e4e7';ctx.font='bold 15px sans-serif';ctx.fillText(s?s.name:'?',100,y+30);
+      if(num<total){ctx.fillStyle='#52525b';ctx.font='14px sans-serif';ctx.fillText('↓',60,y+52);}
+      y+=58;
+    });
+    if(sch.notes){y+=10;ctx.fillStyle='#121215';ctx.fillRect(24,y,w-48,50);ctx.fillStyle='#71717a';ctx.font='12px sans-serif';const lines=sch.notes.split('\n');lines.forEach((l,i)=>{ctx.fillText(l,36,y+20+i*16);});}
+    canvas.toBlob(blob=>{
+      if(!blob){navigator.clipboard.writeText('分享失败，请重试').then(()=>alert('图片生成失败，请重试'));return;}
+      const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='连招_'+faction+specName+'_'+sch.name+'.png';a.click();URL.revokeObjectURL(url);
+    },'image/png');
+  };
+  if(iconsToLoad.length){Promise.all(iconsToLoad.map(im=>new Promise(r=>{if(im.complete)r();else im.onload=r;}))).then(doDraw);}
+  else{doDraw();}
+}
+
+function addSkill(){
+  const name=document.getElementById('newSkillInput').value.trim();if(!name)return;
+  const sp=specData();if(!sp.skills)sp.skills={};
+  sp.skills['s_'+Date.now()]={name};
+  document.getElementById('newSkillInput').value='';saveDB();renderPool();
+}
+function uploadIcon(id){
+  const inp=document.getElementById('uploadImg');
+  inp.onchange=function(){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=function(){setImg(id,r.result);renderPool();renderSeq();};r.readAsDataURL(f);};
+  inp.click();
+}
+function setImg(id,u){skillImgs[imgKey(id)]=u;saveImgs();}
+
+// Schemes
+function newSchemeSilent(){const s={id:'z_'+Date.now(),name:'方案'+(schemes().length+1),sequence:[]};schemes().push(s);curSchemeId=s.id;saveDB();renderSchemeSel();}
+function newScheme(){openModal('新建方案','方案'+(schemes().length+1),name=>{if(!name)return;const s={id:'z_'+Date.now(),name,sequence:[]};schemes().push(s);curSchemeId=s.id;saveDB();renderSchemeSel();renderSeq();});}
+function renameScheme(){const sch=curScheme();if(!sch)return;openModal('重命名',sch.name,name=>{if(name){sch.name=name;saveDB();renderSchemeSel();}});}
+function saveComboNotes(){const sch=curScheme();if(!sch){return;}sch.notes=document.getElementById('comboNotes').value;saveDB();}
+function deleteScheme(){const sch=curScheme();if(!sch||!confirm('删除方案"'+sch.name+'"？'))return;const list=schemes();list.splice(list.indexOf(sch),1);curSchemeId=list.length?list[0].id:null;saveDB();renderSchemeSel();renderSeq();}
+
+function onFactionChange(){curFaction=document.getElementById('factionSel').value;curSpec=Object.keys(DEFAULTS[curFaction].specs)[0];curSchemeId=null;renderSpecSel();renderAll();}
+function onSpecChange(){curSpec=document.getElementById('specSel').value;curSchemeId=null;renderSchemeSel();renderAll();}
+function onSchemeChange(){curSchemeId=document.getElementById('schemeSel').value||null;renderSeq();}
+
+let modalCb=null;
+function openModal(t,d,cb){document.getElementById('modalTitle').textContent=t;const i=document.getElementById('modalInput');i.value=d||'';document.getElementById('modal').style.display='flex';setTimeout(()=>i.focus(),50);modalCb=cb;}
+function closeModal(ok){document.getElementById('modal').style.display='none';if(ok&&modalCb)modalCb(document.getElementById('modalInput').value.trim());modalCb=null;}
+document.getElementById('modalInput').addEventListener('keydown',e=>{if(e.key==='Enter')closeModal(true);});
+
+function renderAll(){renderPool();renderSeq();}
+
+// Drop listener on seq box
+(function setupDrop(){
+  const el=document.getElementById('seqFlow');
+  el.addEventListener('dragover',e=>{e.preventDefault();});
+  el.addEventListener('drop',e=>{
+    e.preventDefault();
+    const raw=e.dataTransfer.getData('text/plain');
+    if(!raw||!raw.startsWith('skill:'))return;
+    const sid=raw.slice(6);
+    skillToSeq(sid);
+  });
+  // Pool chip drag
+  document.addEventListener('dragstart',e=>{
+    const chip=e.target.closest('.skill-chip');
+    if(chip){
+      const nameEl=chip.querySelector('.chname');
+      if(nameEl){
+        const sp=specData(),skills=sp.skills||{};
+        for(const[id,s]of Object.entries(skills)){if(s.name===nameEl.textContent){e.dataTransfer.setData('text/plain','skill:'+id);return;}}
+      }
+    }
+  });
+})();
+
+initDB();loadImgs();renderSelectors();
+const list=schemes();if(list.length)curSchemeId=list[0].id;else newSchemeSilent();
+renderAll();
+</script>
+</body>
+</html>

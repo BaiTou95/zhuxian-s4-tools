@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>诛仙世界 · 竞拍出价器</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0D0D0D;
+  --card: #161616;
+  --border: #2A2A2A;
+  --border-light: #1F1F1F;
+  --text: #E0E0E0;
+  --text-dim: #7A7A7A;
+  --gold: #f59e0b;
+  --green: #4CAF50;
+  --yellow: #F0A030;
+  --red: #F44336;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+}
+body {
+  font-family: 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; padding: 16px;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+.container { max-width: 780px; margin: 0 auto; }
+
+header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+}
+h1 { font-size: 22px; color: var(--gold); display: flex; align-items: center; gap: 8px; }
+.back-link {
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--text-dim); padding: 7px 14px; border-radius: 8px;
+  font-size: 13px; text-decoration: none; transition: all 0.15s;
+}
+.back-link:hover { border-color: var(--gold); color: var(--gold); }
+
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px; margin-bottom: 16px;
+}
+.card-title {
+  font-size: 15px; color: var(--gold); margin-bottom: 16px;
+  font-weight: 600; display: flex; align-items: center; gap: 8px;
+}
+
+/* Input groups */
+.input-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.input-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 140px; }
+.input-group label {
+  font-size: 11px; color: var(--text-dim); text-transform: uppercase;
+  letter-spacing: 1px; font-weight: 500;
+}
+select, input {
+  background: var(--border-light); color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; font-size: 14px;
+  transition: border-color 0.15s;
+}
+select {
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23d4af37' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+  padding-right: 32px; cursor: pointer;
+}
+select:hover, input:hover { border-color: var(--gold); }
+select:focus, input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 2px rgba(94,106,210,0.15); }
+.price-input-wrap { position: relative; }
+.price-input-wrap input { padding-right: 40px; width: 100%; }
+.price-suffix {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--text-dim); font-size: 13px; pointer-events: none;
+}
+
+/* Liquidity chips */
+.liquidity-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.liquidity-chip {
+  padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--border-light); color: var(--text-dim); font-size: 12.5px;
+  cursor: pointer; transition: all 0.12s; text-align: center; line-height: 1.4;
+}
+.liquidity-chip:hover { border-color: var(--gold); color: var(--text); }
+.liquidity-chip.active { background: rgba(94,106,210,0.1); border-color: var(--gold); color: var(--gold); font-weight: 600; }
+.liquidity-chip .chip-discount { font-size: 10px; opacity: 0.7; display: block; }
+
+/* Calculate button */
+.calc-btn {
+  width: 100%; padding: 12px; border: none; border-radius: 10px;
+  background: linear-gradient(135deg, var(--gold), #b8962e);
+  color: var(--bg); font-size: 15px; font-weight: 700; cursor: pointer;
+  margin-top: 4px; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.calc-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* Results */
+.result-empty { text-align: center; color: var(--text-dim); padding: 40px 16px; }
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.result-col { background: var(--border-light); border-radius: 10px; padding: 16px; }
+.result-col .strat-label {
+  font-size: 12px; color: var(--text-dim); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 6px;
+}
+.result-col .strat-label .badge {
+  padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;
+}
+.badge-aggressive { background: rgba(244,67,54,0.15); color: var(--red); }
+.badge-conservative { background: rgba(76,175,80,0.15); color: var(--green); }
+.result-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.result-row:last-child { border-bottom: none; }
+.result-row .r-label { font-size: 12px; color: var(--text-dim); }
+.result-row .r-value { font-size: 14px; font-weight: 600; }
+.result-row .r-value.highlight { color: var(--gold); font-size: 16px; }
+.result-row .r-value.green { color: var(--green); }
+.result-row .r-value.red { color: var(--red); }
+
+/* Click-to-copy */
+.result-row.copyable {
+  cursor: pointer; transition: all 0.12s;
+  border-radius: 6px; padding: 6px 8px; margin: 0 -8px;
+}
+.result-row.copyable:hover { background: rgba(94,106,210,0.06); }
+.result-row.copyable .copy-hint {
+  font-size: 10px; color: var(--text-dim); opacity: 0; transition: opacity 0.12s;
+  margin-left: 4px; vertical-align: middle;
+}
+.result-row.copyable:hover .copy-hint { opacity: 1; }
+.result-row.copied { background: rgba(76,175,80,0.1) !important; }
+.result-row.copied .copy-hint { opacity: 1; color: var(--green); }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--gold); color: var(--bg); padding: 8px 20px;
+  border-radius: 20px; font-size: 13px; font-weight: 600; z-index: 999;
+  pointer-events: none; opacity: 0; transition: opacity 0.2s;
+}
+.toast.show { opacity: 1; }
+
+/* Summary row */
+.summary-row {
+  display: flex; justify-content: space-between; flex-wrap: wrap;
+  gap: 12px; padding: 12px 16px; background: var(--border-light);
+  border-radius: 8px; margin-bottom: 16px;
+}
+.summary-item { font-size: 13px; }
+.summary-item .s-label { font-size: 11px; color: var(--text-dim); }
+.summary-item .s-value { font-weight: 700; color: var(--gold); }
+
+/* Info */
+.info-box {
+  background: var(--border-light); border-radius: 8px;
+  padding: 14px 16px; font-size: 12px; color: var(--text-dim); line-height: 1.8;
+}
+.info-box b { color: var(--gold); }
+
+@media (max-width: 600px) {
+  .result-grid { grid-template-columns: 1fr; }
+  .input-row { flex-direction: column; }
+  .liquidity-chips { justify-content: center; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>竞拍出价器</h1>
+  <div class="header-right">
+    <a class="back-link" href="zhuxian-s4-tracker.html">返回搬砖看板</a>
+  </div>
+</header>
+
+<!-- Input card -->
+<div class="card">
+  <div class="card-title">📋 输入参数</div>
+
+  <div class="input-group" style="margin-bottom:14px;">
+    <label>好不好卖</label>
+    <div class="liquidity-chips" id="liquidityChips"></div>
+  </div>
+
+  <div class="input-row">
+    <div class="input-group">
+      <label>市场价</label>
+      <div class="price-input-wrap">
+        <input type="number" id="priceInput" value="100000" min="100" step="100" />
+        <span class="price-suffix">银币</span>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>队伍人数</label>
+      <select id="playerCount">
+        <option value="5">5人本</option>
+        <option value="10">10人本</option>
+        <option value="20">20人本</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="calc-btn" id="calcBtn">
+    开始计算
+    <span style="font-size:16px;">→</span>
+  </button>
+</div>
+
+<!-- Results card -->
+<div class="card" id="resultCard">
+  <div class="card-title">📊 计算结果</div>
+  <div class="result-empty" id="resultEmpty">填好参数点计算看结果</div>
+  <div id="resultContent" style="display:none;">
+    <!-- Summary bar -->
+    <div class="summary-row">
+      <div class="summary-item">
+        <div class="s-label">物品税后收入</div>
+        <div class="s-value" id="sumAfterTax">-</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-label">推荐出价范围</div>
+        <div class="s-value" id="sumBidRange">-</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-label">市场手续费率</div>
+        <div class="s-value">5%</div>
+      </div>
+    </div>
+
+    <!-- Two strategies -->
+    <div class="result-grid">
+      <!-- Aggressive -->
+      <div class="result-col">
+        <div class="strat-label">
+          <span class="badge badge-aggressive">激进策略</span>
+          <span style="font-size:11px;color:var(--text-dim);">高出价，高胜率</span>
+        </div>
+        <div class="result-row copyable" data-id="aggBid">
+          <span class="r-label">出价金额<span class="copy-hint"> 复制</span></span>
+          <span class="r-value highlight" id="aggBid">-</span>
+        </div>
+        <div class="result-row">
+          <span class="r-label">你的最终收益</span>
+          <span class="r-value green" id="aggEarning">-</span>
+        </div>
+        <div class="result-row">
+          <span class="r-label">团队每人分成</span>
+          <span class="r-value" id="aggShare">-</span>
+        </div>
+        <div class="result-row">
+          <span class="r-label">超额收益（vs队友）</span>
+          <span class="r-value green" id="aggExcess">-</span>
+        </div>
+      </div>
+
+      <!-- Conservative -->
+      <div class="result-col">
+        <div class="strat-label">
+          <span class="badge badge-conservative">保守策略(+3%)</span>
+          <span style="font-size:11px;color:var(--text-dim);">低出价，高收益</span>
+        </div>
+        <div class="result-row copyable" data-id="conBid">
+          <span class="r-label">出价金额<span class="copy-hint"> 复制</span></span>
+          <span class="r-value highlight" id="conBid">-</span>
+        </div>
+        <div class="result-row">
+          <span class="r-label">你的最终收益</span>
+          <span class="r-value green" id="conEarning">-</span>
+        </div>
+        <div class="result-row">
+          <span class="r-label">团队每人分成</span>
+          <span class="r-value" id="conShare">-</span>
+        </div>
+        <div class="result-row">
+          <span class="r-label">超额收益（vs队友）</span>
+          <span class="r-value green" id="conExcess">-</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- How it works -->
+<div class="card">
+  <div class="card-title">📐 计算说明</div>
+  <div class="info-box">
+    物品税后价值 = 售价 × (1 − 折扣) × 0.95（扣 5% 税）<br/>
+    你掏 B 出价，N 人分 → 净成本 = B × (N−1)/N（你分回 B/N）<br/>
+    最终收益 = 税后价值 − 净成本<br/>
+    队友每人分到 = B / N<br/>
+    <br/>
+    激进：出价 = 税后价值，力争拿下，跟队友持平<br/>
+    保守(+3%)：少出 3%，比队友多赚 3%<br/>
+    <br/>
+    折扣参考：极易(0%) / 容易(5%) / 普通(10%) / 较难(15%) / 难卖(20%)
+  </div>
+</div>
+
+<footer style="text-align:center;color:var(--text-dim);font-size:12px;padding:20px 0;">
+  诛仙世界拍卖公式 · 算完就出价
+</footer>
+
+</div>
+
+<div class="toast" id="toast">已复制出价金额</div>
+
+<script>
+const LIQUIDITY_LEVELS = [
+  { key: 0,   label: '秒卖', discount: 0,   desc: '原价' },
+  { key: 5,   label: '好卖', discount: 0.05, desc: '打95折' },
+  { key: 10,  label: '一般', discount: 0.10, desc: '打9折' },
+  { key: 15,  label: '难卖', discount: 0.15, desc: '打85折' },
+  { key: 20,  label: '巨难卖', discount: 0.20, desc: '打8折' },
+];
+const MARKET_TAX = 0.05; // 5% market tax rate
+let selectedLiquidity = 10; // default: 普通
+
+// ---- Init liquidity chips ----
+(function() {
+  const container = document.getElementById("liquidityChips");
+  LIQUIDITY_LEVELS.forEach(lv => {
+    const chip = document.createElement("div");
+    chip.className = "liquidity-chip" + (lv.key === selectedLiquidity ? " active" : "");
+    chip.innerHTML = `${lv.label}<span class="chip-discount">${lv.desc}</span>`;
+    chip.addEventListener("click", () => {
+      selectedLiquidity = lv.key;
+      document.querySelectorAll(".liquidity-chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      calculate();
+    });
+    container.appendChild(chip);
+  });
+})();
+
+// ---- Input change triggers ----
+document.getElementById("priceInput").addEventListener("input", calculate);
+document.getElementById("playerCount").addEventListener("change", calculate);
+document.getElementById("calcBtn").addEventListener("click", calculate);
+
+function formatSilver(n) {
+  if (n === undefined || n === null || isNaN(n)) return "-";
+  n = Math.round(n);
+  if (n >= 10000) {
+    const w = Math.floor(n / 10000);
+    const r = n % 10000;
+    return r > 0 ? `${w}万${r}` : `${w}万`;
+  }
+  return n.toLocaleString();
+}
+
+function calculate() {
+  const price = parseInt(document.getElementById("priceInput").value, 10) || 0;
+  const playerCount = parseInt(document.getElementById("playerCount").value, 10) || 5;
+  const discount = LIQUIDITY_LEVELS.find(l => l.key === selectedLiquidity)?.discount || 0.1;
+
+  if (price <= 0) {
+    document.getElementById("resultEmpty").style.display = "block";
+    document.getElementById("resultContent").style.display = "none";
+    return;
+  }
+
+  document.getElementById("resultEmpty").style.display = "none";
+  document.getElementById("resultContent").style.display = "block";
+
+  // Calculations
+  const afterTax = price * (1 - discount) * (1 - MARKET_TAX);
+  const n = playerCount;
+  const ratio = (n - 1) / n;
+
+  // Aggressive: bid = afterTax (break even with team, 0 excess)
+  const aggBid = Math.round(afterTax);
+  const aggCost = Math.round(aggBid * ratio);
+  const aggEarning = Math.round(afterTax - aggCost);
+  const aggShare = Math.round(aggBid / n);
+  const aggExcess = aggEarning - aggShare;
+
+  // Conservative: bid 3% lower = 3% more profit
+  const conBid = Math.round(afterTax * 0.97);
+  const conCost = Math.round(conBid * ratio);
+  const conEarning = Math.round(afterTax - conCost);
+  const conShare = Math.round(conBid / n);
+  const conExcess = conEarning - conShare;
+
+  // Bid range
+  const bidMax = Math.round(afterTax / ratio); // break even
+  const bidMin = conBid;
+
+  // Update UI
+  document.getElementById("sumAfterTax").textContent = formatSilver(afterTax) + " 银币";
+  document.getElementById("sumBidRange").textContent = formatSilver(bidMin) + " ~ " + formatSilver(bidMax) + " 银币";
+
+  // Aggressive
+  document.getElementById("aggBid").textContent = formatSilver(aggBid) + " 银币";
+  document.getElementById("aggEarning").textContent = formatSilver(aggEarning) + " 银币";
+  document.getElementById("aggShare").textContent = formatSilver(aggShare) + " 银币";
+  document.getElementById("aggExcess").textContent = formatSilver(aggExcess) + " 银币";
+
+  // Conservative
+  document.getElementById("conBid").textContent = formatSilver(conBid) + " 银币";
+  document.getElementById("conEarning").textContent = formatSilver(conEarning) + " 银币";
+  document.getElementById("conShare").textContent = formatSilver(conShare) + " 银币";
+  document.getElementById("conExcess").textContent = formatSilver(conExcess) + " 银币";
+
+  // Set raw copy values on bid rows (plain number, no formatting)
+  document.getElementById("aggBid").closest(".result-row").dataset.copyValue = String(aggBid);
+  document.getElementById("conBid").closest(".result-row").dataset.copyValue = String(conBid);
+}
+
+function copyBid(row) {
+  const val = row.dataset.copyValue;
+  if (!val) return;
+  navigator.clipboard.writeText(val).then(() => {
+    row.classList.add("copied");
+    const hint = row.querySelector(".copy-hint");
+    if (hint) hint.textContent = " 已复制!";
+    const toast = document.getElementById("toast");
+    toast.classList.add("show");
+    setTimeout(() => {
+      row.classList.remove("copied");
+      if (hint) hint.textContent = " 复制";
+      toast.classList.remove("show");
+    }, 1500);
+  }).catch(() => {});
+}
+
+// Bind copy handlers and re-bind after each calculate
+document.querySelectorAll(".result-row.copyable").forEach(row => {
+  row.addEventListener("click", () => copyBid(row));
+});
+
+// Initial calculation
+calculate();
+</script>
+</body>
+</html>
