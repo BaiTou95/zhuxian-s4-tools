@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>天工机巧盘 · 求解器</title>
 <style>
+@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css');
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root {
     --bg: #0D0D0D;
@@ -18,8 +19,8 @@
     --green: #4CAF50;
     --yellow: #F0A030;
     --red: #F44336;
-    --blue: #3b82f6;
-    --purple: #a855f7;
+    --blue: #6a9cc8;
+    --purple: #a080b8;
     --cell-size: 42px;
   }
   body {
@@ -117,7 +118,7 @@
   .shape-opt.selected {
     border-color: var(--gold);
     background: rgba(94,106,210,0.12);
-    box-shadow: 0 0 0 1px var(--gold) inset;
+    
   }
   .shape-opt svg { display: block; pointer-events: none; }
 
@@ -126,18 +127,18 @@
   .cm-row td { border-bottom: 1px solid rgba(94,106,210,0.15); }
   .q-hdr td { padding:6px 12px; border-bottom:1px solid var(--border); cursor:pointer; user-select:none; }
   .q-hdr td:hover { background:rgba(255,255,255,0.02); }
-  .q-hdr span { font-size:11px; font-weight:700; padding:2px 10px; border-radius:8px; letter-spacing:1px; }
+  .q-hdr span { font-size:11px; font-weight:500; padding:2px 10px; border-radius:var(--radius-sm); letter-spacing:1px; }
   .q-hdr .q-count { font-size:10px; color:var(--text-dim); margin-left:4px; }
   .q-hdr .q-arrow { display:inline-block; margin-right:4px; font-size:10px; transition:transform .2s; }
   .q-hdr.collapsed .q-arrow { transform:rotate(-90deg); }
   .q-hdr-zhen span.q-label { color:#c9a84c; background:rgba(201,168,76,.1); }
-  .q-hdr-liang span.q-label { color:#a855f7; background:rgba(168,85,247,.1); }
+  .q-hdr-liang span.q-label { color:#a080b8; background:rgba(168,85,247,.1); }
   .q-hdr-fan span.q-label { color:#71717a; background:rgba(113,113,122,.1); }
-  .q-add-btn { margin-left:8px; width:20px; height:20px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--text-dim); cursor:pointer; font-size:14px; line-height:1; padding:0; transition:all .15s; }
+  .q-add-btn { margin-left:8px; width:20px; height:20px; border-radius:var(--radius); border:1px solid var(--border); background:transparent; color:var(--text-dim); cursor:pointer; font-size:14px; line-height:1; padding:0; transition:all .15s; }
   .q-add-btn:hover { border-color:var(--gold); color:var(--gold); background:rgba(201,168,76,.1); }
-  .q-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:8px; }
+  .q-badge { font-size:10px; font-weight:500; padding:2px 8px; border-radius:var(--radius-sm); }
   .q-badge-zhen { color:#c9a84c; background:rgba(201,168,76,.1); }
-  .q-badge-liang { color:#a855f7; background:rgba(168,85,247,.1); }
+  .q-badge-liang { color:#a080b8; background:rgba(168,85,247,.1); }
   .q-badge-fan { color:#71717a; background:rgba(113,113,122,.1); }
   .q-empty { color:var(--text-dim); font-size:12px; font-style:italic; padding:4px 16px; }
   tr.q-group-row.collapsed { display:none; }
@@ -405,6 +406,13 @@
     .cell.piece .baseattr-label { font-size: 6.5px; }
     .cell.piece .cm-label { font-size: 6.5px; padding: 0px 2px; }
   }
+
+/* Guofeng extras */
+.q-hdr{cursor:pointer;user-select:none}
+.q-hdr .q-label{font-family:var(--font-title)}
+.add-row-btn{font-family:var(--font-title)}
+#solveBtn,.btn-primary{font-family:var(--font-title);letter-spacing:1px}
+.lib-summary{font-family:var(--font-title)}
 </style>
 </head>
 <body>
